@@ -1,4 +1,4 @@
-"""Carregamento e validação das configurações do VigiaGrid."""
+"""Carregamento e validação das configurações do VisionHub."""
 
 from __future__ import annotations
 

@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-"""Ponto de entrada do reprodutor de câmeras RTSP VigiaGrid."""
+"""Ponto de entrada do reprodutor de câmeras RTSP VisionHub."""
 
 import tkinter as tk
 
-from vigiagrid import VigiaGridApp
+from visionhub import VisionHubApp
 
 
 def main() -> None:
     """Cria a janela principal e inicia o loop da interface gráfica."""
     root = tk.Tk()
-    VigiaGridApp(root)
+    VisionHubApp(root)
     root.mainloop()
 
 

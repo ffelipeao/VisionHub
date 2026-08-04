@@ -1,4 +1,4 @@
-"""Coordenação da janela, dos painéis e das interações do VigiaGrid."""
+"""Coordenação da janela, dos painéis e das interações do VisionHub."""
 
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ from .media import AudioController, CameraWorker
 from .widgets import CameraPanel
 
 
-class VigiaGridApp:
+class VisionHubApp:
     """Controla o ciclo de vida e os modos de visualização da aplicação."""
 
     def __init__(self, root: tk.Tk) -> None:
@@ -30,7 +30,7 @@ class VigiaGridApp:
         self.active_audio_panel: Optional[CameraPanel] = None
         self.volume_update_id: Optional[str] = None
 
-        root.title("VigiaGrid — 4 Câmeras")
+        root.title("VisionHub — 4 Câmeras")
         self.configure_initial_geometry()
         root.minsize(800, 500)
         root.configure(bg="black")

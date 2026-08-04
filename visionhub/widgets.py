@@ -1,4 +1,4 @@
-"""Componentes visuais reutilizáveis da interface do VigiaGrid."""
+"""Componentes visuais reutilizáveis da interface do VisionHub."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Leitura de vídeo e reprodução de áudio das câmeras RTSP."""
+"""Leitura de vídeo e reprodução de áudio RTSP do VisionHub."""
 
 from __future__ import annotations
 
