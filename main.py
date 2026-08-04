@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Mosaico RTSP 2x2 para NVR AGL 1204.
+VigiaGrid — reprodutor de câmeras RTSP em mosaico 2x2.
 
 Requisitos:
     python3 -m pip install -r requirements.txt
@@ -256,7 +256,7 @@ class MosaicApp:
         self.root = root
         self.fullscreen = False
 
-        root.title("NVR AGL — Mosaico 4 Câmeras")
+        root.title("VigiaGrid — 4 Câmeras")
         root.geometry(f"{LARGURA_JANELA}x{ALTURA_JANELA}")
         root.minsize(800, 500)
         root.configure(bg="black")
