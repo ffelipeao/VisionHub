@@ -200,6 +200,108 @@ class CameraWorker(threading.Thread):
                 )
 
 
+class IconButton(tk.Canvas):
+    """Botão com ícone vetorial, sem depender de símbolos disponíveis na fonte."""
+
+    def __init__(
+        self,
+        master,
+        icon: str,
+        command: Callable[[], None],
+    ) -> None:
+        super().__init__(
+            master,
+            width=32,
+            height=28,
+            bg="#2563eb",
+            highlightthickness=0,
+            borderwidth=0,
+            cursor="hand2",
+            takefocus=True,
+        )
+        self.icon = icon
+        self.command = command
+        self.bind("<Button-1>", self._activate)
+        self.bind("<Return>", self._activate)
+        self.bind("<space>", self._activate)
+        self.bind("<Enter>", lambda _event: self._draw("#1d4ed8"))
+        self.bind("<Leave>", lambda _event: self._draw("#2563eb"))
+        self._draw()
+
+    def _activate(self, _event=None) -> None:
+        self.command()
+
+    def set_command(self, command: Callable[[], None]) -> None:
+        self.command = command
+
+    def set_icon(self, icon: str) -> None:
+        self.icon = icon
+        self._draw()
+
+    def _draw(self, background: str = "#2563eb") -> None:
+        self.configure(bg=background)
+        self.delete("icon")
+        color = "white"
+
+        if self.icon in {"expand", "fullscreen"}:
+            # Quatro cantos abertos representam ampliação/tela cheia.
+            segments = (
+                (7, 11, 7, 7, 11, 7),
+                (21, 7, 25, 7, 25, 11),
+                (7, 17, 7, 21, 11, 21),
+                (21, 21, 25, 21, 25, 17),
+            )
+            for segment in segments:
+                self.create_line(*segment, fill=color, width=2, tags="icon")
+
+            if self.icon == "fullscreen":
+                self.create_rectangle(
+                    11,
+                    10,
+                    21,
+                    18,
+                    outline=color,
+                    width=1,
+                    tags="icon",
+                )
+        elif self.icon == "mosaic":
+            for x, y in ((8, 7), (17, 7), (8, 15), (17, 15)):
+                self.create_rectangle(
+                    x,
+                    y,
+                    x + 7,
+                    y + 6,
+                    outline=color,
+                    width=2,
+                    tags="icon",
+                )
+        elif self.icon == "restore":
+            self.create_rectangle(
+                8,
+                9,
+                21,
+                20,
+                outline=color,
+                width=2,
+                tags="icon",
+            )
+            self.create_line(
+                12,
+                9,
+                12,
+                6,
+                25,
+                6,
+                25,
+                17,
+                21,
+                17,
+                fill=color,
+                width=2,
+                tags="icon",
+            )
+
+
 class CameraPanel(tk.Frame):
     def __init__(
         self,
@@ -238,39 +340,17 @@ class CameraPanel(tk.Frame):
         )
         self.status_label.place(relx=1, x=-82, y=5, anchor="ne")
 
-        self.fullscreen_button = tk.Button(
+        self.fullscreen_button = IconButton(
             self,
-            text="⛶",
+            icon="fullscreen",
             command=on_fullscreen,
-            bg="#2563eb",
-            fg="white",
-            activebackground="#1d4ed8",
-            activeforeground="white",
-            relief="flat",
-            borderwidth=0,
-            highlightthickness=0,
-            font=("Helvetica", 16),
-            cursor="hand2",
-            padx=5,
-            pady=0,
         )
         self.fullscreen_button.place(relx=1, x=-8, y=5, anchor="ne", width=32, height=28)
 
-        self.expand_button = tk.Button(
+        self.expand_button = IconButton(
             self,
-            text="□",
+            icon="expand",
             command=on_expand,
-            bg="#2563eb",
-            fg="white",
-            activebackground="#1d4ed8",
-            activeforeground="white",
-            relief="flat",
-            borderwidth=0,
-            highlightthickness=0,
-            font=("Helvetica", 17),
-            cursor="hand2",
-            padx=5,
-            pady=0,
         )
         self.expand_button.place(relx=1, x=-43, y=5, anchor="ne", width=32, height=28)
 
@@ -330,11 +410,11 @@ class MosaicApp:
                 on_expand=lambda: None,
                 on_fullscreen=self.toggle_fullscreen,
             )
-            panel.expand_button.config(
-                command=lambda selected=panel: self.toggle_camera(selected)
+            panel.expand_button.set_command(
+                lambda selected=panel: self.toggle_camera(selected)
             )
-            panel.fullscreen_button.config(
-                command=lambda selected=panel: self.toggle_panel_fullscreen(selected)
+            panel.fullscreen_button.set_command(
+                lambda selected=panel: self.toggle_panel_fullscreen(selected)
             )
             self.panels.append(panel)
 
@@ -414,7 +494,7 @@ class MosaicApp:
         self.fullscreen = True
         self.root.attributes("-fullscreen", True)
         for camera_panel in self.panels:
-            camera_panel.fullscreen_button.config(text="↙")
+            camera_panel.fullscreen_button.set_icon("restore")
 
     def leave_fullscreen(self) -> None:
         saved_geometry = self.geometry_before_fullscreen
@@ -429,7 +509,7 @@ class MosaicApp:
         self.panel_before_fullscreen = None
         self.geometry_before_fullscreen = None
         for panel in self.panels:
-            panel.fullscreen_button.config(text="⛶")
+            panel.fullscreen_button.set_icon("fullscreen")
 
         if saved_geometry is not None:
             # Tk precisa concluir a saída da tela cheia antes de aceitar a
@@ -473,7 +553,7 @@ class MosaicApp:
             padx=0,
             pady=0,
         )
-        selected_panel.expand_button.config(text="▦")
+        selected_panel.expand_button.set_icon("mosaic")
         self.expanded_panel = selected_panel
 
     def show_mosaic(self) -> None:
@@ -492,7 +572,7 @@ class MosaicApp:
                 padx=1,
                 pady=1,
             )
-            panel.expand_button.config(text="□")
+            panel.expand_button.set_icon("expand")
 
         self.expanded_panel = None
         self.root.update_idletasks()
