@@ -311,6 +311,7 @@ class MosaicApp:
         self.fullscreen = False
         self.expanded_panel: Optional[CameraPanel] = None
         self.panel_before_fullscreen: Optional[CameraPanel] = None
+        self.geometry_before_fullscreen: Optional[str] = None
 
         root.title("VigiaGrid — 4 Câmeras")
         self.configure_initial_geometry()
@@ -400,6 +401,10 @@ class MosaicApp:
             self.enter_fullscreen(panel)
 
     def enter_fullscreen(self, panel: Optional[CameraPanel] = None) -> None:
+        # Guarda tamanho e posição antes que o gerenciador de janelas altere a
+        # geometria ao entrar em tela cheia.
+        self.root.update_idletasks()
+        self.geometry_before_fullscreen = self.root.geometry()
         self.panel_before_fullscreen = self.expanded_panel
         if panel is not None:
             self.show_camera(panel)
@@ -410,6 +415,7 @@ class MosaicApp:
             camera_panel.fullscreen_button.config(text="↙")
 
     def leave_fullscreen(self) -> None:
+        saved_geometry = self.geometry_before_fullscreen
         self.fullscreen = False
         self.root.attributes("-fullscreen", False)
 
@@ -419,8 +425,17 @@ class MosaicApp:
             self.show_camera(self.panel_before_fullscreen)
 
         self.panel_before_fullscreen = None
+        self.geometry_before_fullscreen = None
         for panel in self.panels:
             panel.fullscreen_button.config(text="⛶")
+
+        if saved_geometry is not None:
+            # Tk precisa concluir a saída da tela cheia antes de aceitar a
+            # geometria anterior, especialmente no macOS.
+            self.root.after(
+                50,
+                lambda geometry=saved_geometry: self.root.geometry(geometry),
+            )
 
     def exit_fullscreen(self, _event=None) -> None:
         if self.fullscreen:
