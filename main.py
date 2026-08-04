@@ -27,7 +27,7 @@ os.environ.setdefault("OPENCV_LOG_LEVEL", "SILENT")
 
 import cv2
 from dotenv import load_dotenv
-from PIL import Image, ImageTk
+from PIL import Image, ImageOps, ImageTk
 
 
 load_dotenv(Path(__file__).with_name(".env"))
@@ -77,6 +77,11 @@ ALTURA_JANELA = int_env("WINDOW_HEIGHT", 720)
 FPS_INTERFACE = int_env("UI_FPS", 15)
 TEMPO_RECONEXAO = float(os.getenv("RECONNECT_SECONDS", "3.0"))
 TEMPO_RECONEXAO_MAXIMO = float(os.getenv("RECONNECT_MAX_SECONDS", "60.0"))
+ESCALA_JANELA = float(os.getenv("WINDOW_SCALE", "0.92"))
+AJUSTE_IMAGEM = os.getenv("IMAGE_FIT", "cover").strip().lower()
+
+if AJUSTE_IMAGEM not in {"cover", "contain"}:
+    raise RuntimeError("A variável IMAGE_FIT deve ser 'cover' ou 'contain'.")
 
 # Alguns NVRs retornam erro 500 quando vários canais fazem DESCRIBE ao mesmo tempo.
 RTSP_CONNECTION_LOCK = threading.Lock()
@@ -279,13 +284,22 @@ class CameraPanel(tk.Frame):
         panel_h = max(self.video_label.winfo_height(), 180)
 
         image = Image.fromarray(frame)
-        image.thumbnail((panel_w, panel_h), Image.Resampling.LANCZOS)
-
-        # Centraliza a imagem em um fundo preto sem distorcer a proporção.
-        canvas = Image.new("RGB", (panel_w, panel_h), "black")
-        x = (panel_w - image.width) // 2
-        y = (panel_h - image.height) // 2
-        canvas.paste(image, (x, y))
+        if AJUSTE_IMAGEM == "cover":
+            # Preenche todo o painel sem deformar; recorta apenas as bordas que
+            # excedem a proporção disponível.
+            canvas = ImageOps.fit(
+                image,
+                (panel_w, panel_h),
+                method=Image.Resampling.LANCZOS,
+                centering=(0.5, 0.5),
+            )
+        else:
+            # Exibe o quadro inteiro e completa o espaço restante com preto.
+            image.thumbnail((panel_w, panel_h), Image.Resampling.LANCZOS)
+            canvas = Image.new("RGB", (panel_w, panel_h), "black")
+            x = (panel_w - image.width) // 2
+            y = (panel_h - image.height) // 2
+            canvas.paste(image, (x, y))
 
         self.photo = ImageTk.PhotoImage(canvas)
         self.video_label.configure(image=self.photo)
@@ -296,9 +310,10 @@ class MosaicApp:
         self.root = root
         self.fullscreen = False
         self.expanded_panel: Optional[CameraPanel] = None
+        self.panel_before_fullscreen: Optional[CameraPanel] = None
 
         root.title("VigiaGrid — 4 Câmeras")
-        root.geometry(f"{LARGURA_JANELA}x{ALTURA_JANELA}")
+        self.configure_initial_geometry()
         root.minsize(800, 500)
         root.configure(bg="black")
 
@@ -314,6 +329,9 @@ class MosaicApp:
             )
             panel.expand_button.config(
                 command=lambda selected=panel: self.toggle_camera(selected)
+            )
+            panel.fullscreen_button.config(
+                command=lambda selected=panel: self.toggle_panel_fullscreen(selected)
             )
             self.panels.append(panel)
 
@@ -347,14 +365,66 @@ class MosaicApp:
         delay_ms = max(1, int(1000 / FPS_INTERFACE))
         self.root.after(delay_ms, self.refresh)
 
+    def configure_initial_geometry(self) -> None:
+        """Dimensiona e centraliza a janela conforme a tela disponível."""
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        scale = min(max(ESCALA_JANELA, 0.5), 1.0)
+        available_width = int(screen_width * scale)
+        available_height = int(screen_height * scale)
+
+        # Mantém a proporção configurada, aproveitando o máximo possível da tela.
+        aspect_ratio = LARGURA_JANELA / max(ALTURA_JANELA, 1)
+        width = available_width
+        height = int(width / aspect_ratio)
+        if height > available_height:
+            height = available_height
+            width = int(height * aspect_ratio)
+
+        x = max(0, (screen_width - width) // 2)
+        y = max(0, (screen_height - height) // 2)
+        self.root.geometry(f"{width}x{height}+{x}+{y}")
+
     def toggle_fullscreen(self, _event=None) -> None:
-        self.fullscreen = not self.fullscreen
-        self.root.attributes("-fullscreen", self.fullscreen)
+        """Alterna tela cheia preservando a visualização atual."""
+        if self.fullscreen:
+            self.leave_fullscreen()
+        else:
+            self.enter_fullscreen()
+
+    def toggle_panel_fullscreen(self, panel: CameraPanel) -> None:
+        """Abre a câmera escolhida em tela cheia ou restaura a tela anterior."""
+        if self.fullscreen:
+            self.leave_fullscreen()
+        else:
+            self.enter_fullscreen(panel)
+
+    def enter_fullscreen(self, panel: Optional[CameraPanel] = None) -> None:
+        self.panel_before_fullscreen = self.expanded_panel
+        if panel is not None:
+            self.show_camera(panel)
+
+        self.fullscreen = True
+        self.root.attributes("-fullscreen", True)
+        for camera_panel in self.panels:
+            camera_panel.fullscreen_button.config(text="↙")
+
+    def leave_fullscreen(self) -> None:
+        self.fullscreen = False
+        self.root.attributes("-fullscreen", False)
+
+        if self.panel_before_fullscreen is None:
+            self.show_mosaic()
+        else:
+            self.show_camera(self.panel_before_fullscreen)
+
+        self.panel_before_fullscreen = None
+        for panel in self.panels:
+            panel.fullscreen_button.config(text="⛶")
 
     def exit_fullscreen(self, _event=None) -> None:
         if self.fullscreen:
-            self.fullscreen = False
-            self.root.attributes("-fullscreen", False)
+            self.leave_fullscreen()
         elif self.expanded_panel is not None:
             self.show_mosaic()
 
