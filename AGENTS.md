@@ -7,6 +7,10 @@ inclua ao final da resposta uma sugestão de commit no padrão Conventional
 Commits. Apenas sugira a mensagem; não crie o commit sem solicitação explícita
 do usuário.
 
+Antes da mensagem, apresente um resumo objetivo do que foi alterado. Use de um
+a três itens curtos, mencionando somente as mudanças que fazem parte do commit
+sugerido.
+
 Use o formato:
 
 ```text
@@ -36,9 +40,21 @@ Regras para a descrição:
 - Use `!` antes dos dois-pontos e inclua `BREAKING CHANGE:` no corpo quando
   houver uma mudança incompatível.
 - Quando houver alterações independentes, sugira commits separados.
+- Coloque cada mensagem de commit em um bloco de código separado, sem rótulos ou
+  outros textos dentro dele. Isso permite copiá-la pelo botão da interface.
 
 Exemplo de apresentação ao usuário:
 
+Resumo:
+
+- Adicionada visualização individual de uma câmera.
+- Incluídos controles para entrar e sair da tela cheia.
+
+Sugestão de commit:
+
 ```text
-Sugestão de commit: feat(player): adicione visualização em tela cheia
+feat(player): adicione visualização em tela cheia
 ```
+
+Se forem necessários commits separados, repita o conjunto `Resumo` e
+`Sugestão de commit` para cada um.
