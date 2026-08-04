@@ -18,7 +18,7 @@ import time
 import tkinter as tk
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
+from typing import Callable, Optional
 from urllib.parse import quote
 
 # Uma câmera offline é uma condição esperada da aplicação. Evita que tentativas
@@ -196,7 +196,13 @@ class CameraWorker(threading.Thread):
 
 
 class CameraPanel(tk.Frame):
-    def __init__(self, master, worker: CameraWorker) -> None:
+    def __init__(
+        self,
+        master,
+        worker: CameraWorker,
+        on_expand: Callable[[], None],
+        on_fullscreen: Callable[[], None],
+    ) -> None:
         super().__init__(master, bg="black", highlightthickness=1, highlightbackground="#444")
         self.worker = worker
         self.photo: Optional[ImageTk.PhotoImage] = None
@@ -225,7 +231,41 @@ class CameraPanel(tk.Frame):
             padx=8,
             pady=4,
         )
-        self.status_label.place(relx=1, x=-8, y=5, anchor="ne")
+        self.status_label.place(relx=1, x=-82, y=5, anchor="ne")
+
+        self.fullscreen_button = tk.Button(
+            self,
+            text="⛶",
+            command=on_fullscreen,
+            bg="#111",
+            fg="white",
+            activebackground="#333",
+            activeforeground="white",
+            relief="flat",
+            borderwidth=0,
+            font=("Helvetica", 16),
+            cursor="hand2",
+            padx=5,
+            pady=0,
+        )
+        self.fullscreen_button.place(relx=1, x=-8, y=5, anchor="ne", width=32, height=28)
+
+        self.expand_button = tk.Button(
+            self,
+            text="□",
+            command=on_expand,
+            bg="#111",
+            fg="white",
+            activebackground="#333",
+            activeforeground="white",
+            relief="flat",
+            borderwidth=0,
+            font=("Helvetica", 17),
+            cursor="hand2",
+            padx=5,
+            pady=0,
+        )
+        self.expand_button.place(relx=1, x=-43, y=5, anchor="ne", width=32, height=28)
 
     def refresh(self) -> None:
         self.status_label.config(text=self.worker.status)
@@ -255,6 +295,7 @@ class MosaicApp:
     def __init__(self, root: tk.Tk) -> None:
         self.root = root
         self.fullscreen = False
+        self.expanded_panel: Optional[CameraPanel] = None
 
         root.title("VigiaGrid — 4 Câmeras")
         root.geometry(f"{LARGURA_JANELA}x{ALTURA_JANELA}")
@@ -262,7 +303,19 @@ class MosaicApp:
         root.configure(bg="black")
 
         self.workers = [CameraWorker(camera) for camera in CAMERAS]
-        self.panels = [CameraPanel(root, worker) for worker in self.workers]
+        self.panels: list[CameraPanel] = []
+        for worker in self.workers:
+            panel: CameraPanel
+            panel = CameraPanel(
+                root,
+                worker,
+                on_expand=lambda: None,
+                on_fullscreen=self.toggle_fullscreen,
+            )
+            panel.expand_button.config(
+                command=lambda selected=panel: self.toggle_camera(selected)
+            )
+            self.panels.append(panel)
 
         for row in range(2):
             root.grid_rowconfigure(row, weight=1, uniform="row")
@@ -272,6 +325,11 @@ class MosaicApp:
         for index, panel in enumerate(self.panels):
             row, col = divmod(index, 2)
             panel.grid(row=row, column=col, sticky="nsew", padx=1, pady=1)
+            for widget in (panel, panel.video_label, panel.title_label, panel.status_label):
+                widget.bind(
+                    "<Double-Button-1>",
+                    lambda _event, selected=panel: self.toggle_camera(selected),
+                )
 
         for worker in self.workers:
             worker.start()
@@ -294,8 +352,47 @@ class MosaicApp:
         self.root.attributes("-fullscreen", self.fullscreen)
 
     def exit_fullscreen(self, _event=None) -> None:
-        self.fullscreen = False
-        self.root.attributes("-fullscreen", False)
+        if self.fullscreen:
+            self.fullscreen = False
+            self.root.attributes("-fullscreen", False)
+        elif self.expanded_panel is not None:
+            self.show_mosaic()
+
+    def toggle_camera(self, panel: CameraPanel) -> None:
+        """Alterna uma câmera entre a visualização ampliada e o mosaico."""
+        if self.expanded_panel is panel:
+            self.show_mosaic()
+        else:
+            self.show_camera(panel)
+
+    def show_camera(self, selected_panel: CameraPanel) -> None:
+        """Faz uma única câmera preencher toda a área do programa."""
+        for panel in self.panels:
+            panel.grid_remove()
+
+        selected_panel.grid(
+            row=0,
+            column=0,
+            rowspan=2,
+            columnspan=2,
+            sticky="nsew",
+            padx=0,
+            pady=0,
+        )
+        selected_panel.expand_button.config(text="▦")
+        self.expanded_panel = selected_panel
+
+    def show_mosaic(self) -> None:
+        """Restaura as quatro câmeras na grade 2x2."""
+        for panel in self.panels:
+            panel.grid_remove()
+
+        for index, panel in enumerate(self.panels):
+            row, col = divmod(index, 2)
+            panel.grid(row=row, column=col, sticky="nsew", padx=1, pady=1)
+            panel.expand_button.config(text="□")
+
+        self.expanded_panel = None
 
     def close(self) -> None:
         for worker in self.workers:
