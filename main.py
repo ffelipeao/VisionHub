@@ -242,12 +242,13 @@ class CameraPanel(tk.Frame):
             self,
             text="⛶",
             command=on_fullscreen,
-            bg="#111",
+            bg="#2563eb",
             fg="white",
-            activebackground="#333",
+            activebackground="#1d4ed8",
             activeforeground="white",
             relief="flat",
             borderwidth=0,
+            highlightthickness=0,
             font=("Helvetica", 16),
             cursor="hand2",
             padx=5,
@@ -259,12 +260,13 @@ class CameraPanel(tk.Frame):
             self,
             text="□",
             command=on_expand,
-            bg="#111",
+            bg="#2563eb",
             fg="white",
-            activebackground="#333",
+            activebackground="#1d4ed8",
             activeforeground="white",
             relief="flat",
             borderwidth=0,
+            highlightthickness=0,
             font=("Helvetica", 17),
             cursor="hand2",
             padx=5,
@@ -434,8 +436,15 @@ class MosaicApp:
             # geometria anterior, especialmente no macOS.
             self.root.after(
                 50,
-                lambda geometry=saved_geometry: self.root.geometry(geometry),
+                lambda geometry=saved_geometry: self.restore_geometry(geometry),
             )
+
+    def restore_geometry(self, geometry: str) -> None:
+        """Restaura a janela e força o recálculo dos quatro painéis."""
+        self.root.geometry(geometry)
+        self.root.update_idletasks()
+        for panel in self.panels:
+            panel.video_label.update_idletasks()
 
     def exit_fullscreen(self, _event=None) -> None:
         if self.fullscreen:
@@ -474,10 +483,19 @@ class MosaicApp:
 
         for index, panel in enumerate(self.panels):
             row, col = divmod(index, 2)
-            panel.grid(row=row, column=col, sticky="nsew", padx=1, pady=1)
+            panel.grid(
+                row=row,
+                column=col,
+                rowspan=1,
+                columnspan=1,
+                sticky="nsew",
+                padx=1,
+                pady=1,
+            )
             panel.expand_button.config(text="□")
 
         self.expanded_panel = None
+        self.root.update_idletasks()
 
     def close(self) -> None:
         for worker in self.workers:
