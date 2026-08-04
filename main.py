@@ -13,6 +13,8 @@ from __future__ import annotations
 
 import queue
 import os
+import shutil
+import subprocess
 import threading
 import time
 import tkinter as tk
@@ -79,9 +81,13 @@ TEMPO_RECONEXAO = float(os.getenv("RECONNECT_SECONDS", "3.0"))
 TEMPO_RECONEXAO_MAXIMO = float(os.getenv("RECONNECT_MAX_SECONDS", "60.0"))
 ESCALA_JANELA = float(os.getenv("WINDOW_SCALE", "0.92"))
 AJUSTE_IMAGEM = os.getenv("IMAGE_FIT", "cover").strip().lower()
+VOLUME_INICIAL = int_env("AUDIO_VOLUME", 50)
+FFPLAY_PATH = shutil.which(os.getenv("FFPLAY_PATH", "ffplay"))
 
 if AJUSTE_IMAGEM not in {"cover", "contain"}:
     raise RuntimeError("A variável IMAGE_FIT deve ser 'cover' ou 'contain'.")
+if not 0 <= VOLUME_INICIAL <= 100:
+    raise RuntimeError("A variável AUDIO_VOLUME deve estar entre 0 e 100.")
 
 # Alguns NVRs retornam erro 500 quando vários canais fazem DESCRIBE ao mesmo tempo.
 RTSP_CONNECTION_LOCK = threading.Lock()
@@ -200,6 +206,69 @@ class CameraWorker(threading.Thread):
                 )
 
 
+class AudioController:
+    """Reproduz o áudio RTSP de uma câmera por vez usando o ffplay."""
+
+    def __init__(self) -> None:
+        self.process: Optional[subprocess.Popen] = None
+        self.active_camera: Optional[CameraConfig] = None
+        self.volume = VOLUME_INICIAL
+
+    @property
+    def available(self) -> bool:
+        return FFPLAY_PATH is not None
+
+    @property
+    def playing(self) -> bool:
+        return self.process is not None and self.process.poll() is None
+
+    def play(self, camera: CameraConfig, volume: int) -> bool:
+        self.stop()
+        if FFPLAY_PATH is None:
+            return False
+
+        self.volume = max(0, min(100, int(volume)))
+        self.process = subprocess.Popen(
+            [
+                FFPLAY_PATH,
+                "-nodisp",
+                "-autoexit",
+                "-loglevel",
+                "quiet",
+                "-rtsp_transport",
+                "tcp",
+                "-volume",
+                str(self.volume),
+                camera.url,
+            ],
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        self.active_camera = camera
+        return True
+
+    def set_volume(self, volume: int) -> None:
+        """Aplica o volume reiniciando apenas o reprodutor de áudio ativo."""
+        camera = self.active_camera
+        if camera is not None:
+            self.play(camera, volume)
+        else:
+            self.volume = max(0, min(100, int(volume)))
+
+    def stop(self) -> None:
+        process = self.process
+        self.process = None
+        self.active_camera = None
+        if process is not None and process.poll() is None:
+            process.terminate()
+            try:
+                process.wait(timeout=0.5)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait(timeout=0.5)
+
+
 class IconButton(tk.Canvas):
     """Botão com ícone vetorial, sem depender de símbolos disponíveis na fonte."""
 
@@ -285,6 +354,57 @@ class IconButton(tk.Canvas):
                 width=2,
                 tags="icon",
             )
+        elif self.icon in {"audio_off", "audio_on"}:
+            # Alto-falante desenhado com linhas; o traço indica áudio fechado.
+            self.create_polygon(
+                7,
+                12,
+                12,
+                12,
+                18,
+                7,
+                18,
+                21,
+                12,
+                16,
+                7,
+                16,
+                fill=color,
+                outline=color,
+                tags="icon",
+            )
+            if self.icon == "audio_on":
+                self.create_arc(
+                    15,
+                    9,
+                    25,
+                    19,
+                    start=-55,
+                    extent=110,
+                    style="arc",
+                    outline=color,
+                    width=2,
+                    tags="icon",
+                )
+            else:
+                self.create_line(
+                    21,
+                    10,
+                    27,
+                    18,
+                    fill=color,
+                    width=2,
+                    tags="icon",
+                )
+                self.create_line(
+                    27,
+                    10,
+                    21,
+                    18,
+                    fill=color,
+                    width=2,
+                    tags="icon",
+                )
             self.create_line(
                 12,
                 9,
@@ -309,6 +429,8 @@ class CameraPanel(tk.Frame):
         worker: CameraWorker,
         on_expand: Callable[[], None],
         on_fullscreen: Callable[[], None],
+        on_audio: Callable[[], None],
+        on_volume: Callable[[int], None],
     ) -> None:
         super().__init__(master, bg="black", highlightthickness=1, highlightbackground="#444")
         self.worker = worker
@@ -338,7 +460,7 @@ class CameraPanel(tk.Frame):
             padx=8,
             pady=4,
         )
-        self.status_label.place(relx=1, x=-82, y=5, anchor="ne")
+        self.status_label.place(relx=1, x=-225, y=5, anchor="ne")
 
         self.fullscreen_button = IconButton(
             self,
@@ -353,6 +475,38 @@ class CameraPanel(tk.Frame):
             command=on_expand,
         )
         self.expand_button.place(relx=1, x=-43, y=5, anchor="ne", width=32, height=28)
+
+        self.audio_button = IconButton(
+            self,
+            icon="audio_off",
+            command=on_audio,
+        )
+        self.audio_button.place(relx=1, x=-78, y=5, anchor="ne", width=32, height=28)
+
+        self.volume_scale = tk.Scale(
+            self,
+            from_=0,
+            to=100,
+            value=VOLUME_INICIAL,
+            orient="horizontal",
+            showvalue=False,
+            command=lambda value: on_volume(int(float(value))),
+            bg="#111",
+            fg="white",
+            activebackground="#2563eb",
+            troughcolor="#374151",
+            highlightthickness=0,
+            borderwidth=0,
+            sliderlength=14,
+        )
+        self.volume_scale.place(
+            relx=1,
+            x=-115,
+            y=5,
+            anchor="ne",
+            width=100,
+            height=28,
+        )
 
     def refresh(self) -> None:
         self.status_label.config(text=self.worker.status)
@@ -394,6 +548,9 @@ class MosaicApp:
         self.expanded_panel: Optional[CameraPanel] = None
         self.panel_before_fullscreen: Optional[CameraPanel] = None
         self.geometry_before_fullscreen: Optional[str] = None
+        self.audio = AudioController()
+        self.active_audio_panel: Optional[CameraPanel] = None
+        self.volume_update_id: Optional[str] = None
 
         root.title("VigiaGrid — 4 Câmeras")
         self.configure_initial_geometry()
@@ -409,12 +566,23 @@ class MosaicApp:
                 worker,
                 on_expand=lambda: None,
                 on_fullscreen=self.toggle_fullscreen,
+                on_audio=lambda: None,
+                on_volume=lambda _volume: None,
             )
             panel.expand_button.set_command(
                 lambda selected=panel: self.toggle_camera(selected)
             )
             panel.fullscreen_button.set_command(
                 lambda selected=panel: self.toggle_panel_fullscreen(selected)
+            )
+            panel.audio_button.set_command(
+                lambda selected=panel: self.toggle_audio(selected)
+            )
+            panel.volume_scale.configure(
+                command=lambda value, selected=panel: self.change_volume(
+                    selected,
+                    int(float(value)),
+                )
             )
             self.panels.append(panel)
 
@@ -443,10 +611,53 @@ class MosaicApp:
         self.refresh()
 
     def refresh(self) -> None:
+        if self.active_audio_panel is not None and not self.audio.playing:
+            self.active_audio_panel = None
+            self.update_audio_icons()
+
         for panel in self.panels:
             panel.refresh()
         delay_ms = max(1, int(1000 / FPS_INTERFACE))
         self.root.after(delay_ms, self.refresh)
+
+    def toggle_audio(self, panel: CameraPanel) -> None:
+        """Ativa uma câmera e silencia qualquer outra que esteja tocando."""
+        if self.active_audio_panel is panel and self.audio.playing:
+            self.audio.stop()
+            self.active_audio_panel = None
+        elif self.audio.play(
+            panel.worker.config,
+            int(panel.volume_scale.get()),
+        ):
+            self.active_audio_panel = panel
+        else:
+            panel.status_label.config(text="ffplay não encontrado")
+
+        self.update_audio_icons()
+
+    def change_volume(self, panel: CameraPanel, volume: int) -> None:
+        """Atualiza o volume ativo após uma pequena pausa no movimento."""
+        if panel is not self.active_audio_panel:
+            return
+        if self.volume_update_id is not None:
+            self.root.after_cancel(self.volume_update_id)
+        self.volume_update_id = self.root.after(
+            250,
+            lambda selected=panel, value=volume: self.apply_volume(
+                selected,
+                value,
+            ),
+        )
+
+    def apply_volume(self, panel: CameraPanel, volume: int) -> None:
+        self.volume_update_id = None
+        if panel is self.active_audio_panel and self.audio.playing:
+            self.audio.set_volume(volume)
+
+    def update_audio_icons(self) -> None:
+        for panel in self.panels:
+            icon = "audio_on" if panel is self.active_audio_panel else "audio_off"
+            panel.audio_button.set_icon(icon)
 
     def configure_initial_geometry(self) -> None:
         """Dimensiona e centraliza a janela conforme a tela disponível."""
@@ -578,6 +789,9 @@ class MosaicApp:
         self.root.update_idletasks()
 
     def close(self) -> None:
+        if self.volume_update_id is not None:
+            self.root.after_cancel(self.volume_update_id)
+        self.audio.stop()
         for worker in self.workers:
             worker.stop()
         self.root.destroy()
