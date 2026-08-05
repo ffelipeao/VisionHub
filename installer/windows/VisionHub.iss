@@ -1,9 +1,9 @@
 #define MyAppName "VisionHub"
 #ifndef MyAppVersion
-  #define MyAppVersion "1.1.0-beta.3"
+  #define MyAppVersion "1.1.1"
 #endif
 #ifndef MyOutputBaseFilename
-  #define MyOutputBaseFilename "VisionHub-1.1.0-beta.3-Windows-Setup"
+  #define MyOutputBaseFilename "VisionHub-1.1.1-Windows-Setup"
 #endif
 #define MyAppPublisher "ffelipeao"
 #define MyAppExeName "VisionHub.exe"

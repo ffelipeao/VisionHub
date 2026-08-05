@@ -5,6 +5,17 @@ O projeto utiliza [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
 ## [Não publicado]
 
+## [1.1.1] - 2026-08-05
+
+### Corrigido
+
+- Nomes ausentes ou indefinidos agora usam automaticamente o número da câmera.
+
+### Documentação
+
+- Adicionados os passos de instalação e configuração inicial do NVR.
+- Incluída uma imagem da tela de configuração inicial.
+
 ## [1.1.0-beta.3] - 2026-08-05
 
 ### Adicionado
@@ -40,7 +51,8 @@ O projeto utiliza [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 - Visualização ajustada para preservar data e hora presentes no vídeo.
 - Tentativas de conexão limitadas antes de exibir “Sem conexão”.
 
-[Não publicado]: https://github.com/ffelipeao/VisionHub/compare/v1.1.0-beta.3...HEAD
+[Não publicado]: https://github.com/ffelipeao/VisionHub/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/ffelipeao/VisionHub/compare/v1.1.0-beta.3...v1.1.1
 [1.1.0-beta.3]: https://github.com/ffelipeao/VisionHub/compare/v1.1.0-beta.2...v1.1.0-beta.3
 [1.1.0-beta.2]: https://github.com/ffelipeao/VisionHub/compare/v1.1.0-beta.1...v1.1.0-beta.2
 [1.1.0-beta.1]: https://github.com/ffelipeao/VisionHub/compare/v1.0.0...v1.1.0-beta.1

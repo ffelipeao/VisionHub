@@ -208,8 +208,8 @@ Para gerar e testar instaladores localmente, consulte os guias de build para
 O workflow `Gerar instaladores e release` cria automaticamente arquivos com o
 número definido em `visionhub/version.py`, por exemplo:
 
-- `VisionHub-1.1.0-beta.3-Windows-Setup.exe`, para Windows 11 de 64 bits.
-- `VisionHub-1.1.0-beta.3-macOS.dmg`, contendo o aplicativo para macOS.
+- `VisionHub-<versão>-Windows-Setup.exe`, para Windows 11 de 64 bits.
+- `VisionHub-<versão>-macOS.dmg`, contendo o aplicativo para macOS.
 
 Ele pode ser executado manualmente na aba **Actions** do GitHub ou
 automaticamente ao publicar uma tag iniciada por `v`. Quando a tag corresponde
@@ -219,8 +219,9 @@ pré-lançamento.
 
 ### Instalando o aplicativo
 
-1. Baixe o arquivo correspondente ao seu sistema operacional na página de
-   releases do projeto.
+1. Acesse a [release estável mais recente](https://github.com/ffelipeao/VisionHub/releases/latest)
+   e baixe o arquivo correspondente ao seu sistema operacional. Instale sempre
+   a versão mais recente para receber as últimas correções e melhorias.
 2. No Windows, execute o arquivo `VisionHub-*-Windows-Setup.exe` e siga as
    instruções do instalador. No macOS, abra o arquivo `VisionHub-*-macOS.dmg` e
    arraste o VisionHub para a pasta **Aplicativos**.
@@ -241,23 +242,24 @@ protegida pelo Cofre de Credenciais do Windows ou pelas Chaves do macOS. Nos
 próximos acessos, os dados são carregados automaticamente e essa tela não é
 exibida novamente.
 
-### Publicando uma versão beta
+### Publicando uma versão
 
 1. Atualize `__version__` em `visionhub/version.py` seguindo o formato
-   `MAJOR.MINOR.PATCH-beta.N`.
+   `MAJOR.MINOR.PATCH`.
 2. Registre as alterações da versão no `CHANGELOG.md`.
 3. Crie um commit com essas mudanças.
 4. Crie e envie uma tag exatamente igual à versão, prefixada por `v`:
 
 ```bash
-git tag -a v1.1.0-beta.3 -m "VisionHub 1.1.0 beta 3"
+VERSION=$(python -c 'from visionhub.version import __version__; print(__version__)')
+git tag -a "v$VERSION" -m "VisionHub $VERSION"
 git push origin main
-git push origin v1.1.0-beta.3
+git push origin "v$VERSION"
 ```
 
 O workflow valida se a tag e `__version__` são iguais. Depois dos builds nativos,
-ele publica a release `VisionHub 1.1.0-beta.3` com o `.exe` e o `.dmg`. Não crie
-a tag antes de concluir e enviar o commit da versão.
+ele publica a release com o `.exe` e o `.dmg` correspondentes à versão definida.
+Não crie a tag antes de concluir e enviar o commit da versão.
 
 Durante o desenvolvimento, o programa continua reconhecendo o `.env` da raiz
 do projeto. Se uma instalação anterior possuir senha no `.env`, ela será
