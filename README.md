@@ -201,8 +201,8 @@ python main.py
 O workflow `Gerar instaladores e release` cria automaticamente arquivos com o
 número definido em `visionhub/version.py`, por exemplo:
 
-- `VisionHub-1.1.0-beta.1-Windows-Setup.exe`, para Windows 11 de 64 bits.
-- `VisionHub-1.1.0-beta.1-macOS.dmg`, contendo o aplicativo para macOS.
+- `VisionHub-1.1.0-beta.2-Windows-Setup.exe`, para Windows 11 de 64 bits.
+- `VisionHub-1.1.0-beta.2-macOS.dmg`, contendo o aplicativo para macOS.
 
 Ele pode ser executado manualmente na aba **Actions** do GitHub ou
 automaticamente ao publicar uma tag iniciada por `v`. Quando a tag corresponde
@@ -219,13 +219,13 @@ pré-lançamento.
 4. Crie e envie uma tag exatamente igual à versão, prefixada por `v`:
 
 ```bash
-git tag -a v1.1.0-beta.1 -m "VisionHub 1.1.0 beta 1"
+git tag -a v1.1.0-beta.2 -m "VisionHub 1.1.0 beta 2"
 git push origin main
-git push origin v1.1.0-beta.1
+git push origin v1.1.0-beta.2
 ```
 
 O workflow valida se a tag e `__version__` são iguais. Depois dos builds nativos,
-ele publica a release `VisionHub 1.1.0-beta.1` com o `.exe` e o `.dmg`. Não crie
+ele publica a release `VisionHub 1.1.0-beta.2` com o `.exe` e o `.dmg`. Não crie
 a tag antes de concluir e enviar o commit da versão.
 
 Na primeira execução, o aplicativo solicita o endereço do NVR, a porta RTSP, o

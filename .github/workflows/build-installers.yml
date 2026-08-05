@@ -15,10 +15,10 @@ jobs:
     runs-on: windows-2025
     steps:
       - name: Obter código-fonte
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Configurar Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.13"
           cache: pip
@@ -49,7 +49,7 @@ jobs:
             "installer\windows\VisionHub.iss"
 
       - name: Publicar instalador
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: VisionHub-${{ steps.version.outputs.version }}-Windows
           path: installer/output/VisionHub-${{ steps.version.outputs.version }}-Windows-Setup.exe
@@ -60,10 +60,10 @@ jobs:
     runs-on: macos-15
     steps:
       - name: Obter código-fonte
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Configurar Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.13"
           cache: pip
@@ -96,7 +96,7 @@ jobs:
         run: hdiutil create -volname "VisionHub $VERSION" -srcfolder dist/VisionHub.app -ov -format UDZO "dist/VisionHub-$VERSION-macOS.dmg"
 
       - name: Publicar instalador
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: VisionHub-${{ steps.version.outputs.version }}-macOS
           path: dist/VisionHub-${{ steps.version.outputs.version }}-macOS.dmg
@@ -111,14 +111,14 @@ jobs:
       contents: write
     steps:
       - name: Baixar instalador do Windows
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           pattern: VisionHub-*-Windows
           path: release-files/windows
           merge-multiple: true
 
       - name: Baixar instalador do macOS
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           pattern: VisionHub-*-macOS
           path: release-files/macos
@@ -127,15 +127,25 @@ jobs:
       - name: Publicar release
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         run: |
+          test -f release-files/windows/*.exe
+          test -f release-files/macos/*.dmg
           PRERELEASE=""
           if [[ "$GITHUB_REF_NAME" == *-* ]]; then
             PRERELEASE="--prerelease"
           fi
-          gh release create "$GITHUB_REF_NAME" \
-            release-files/windows/*.exe \
-            release-files/macos/*.dmg \
-            --verify-tag \
-            --generate-notes \
-            --title "VisionHub ${GITHUB_REF_NAME#v}" \
-            $PRERELEASE
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" \
+              release-files/windows/*.exe \
+              release-files/macos/*.dmg \
+              --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" \
+              release-files/windows/*.exe \
+              release-files/macos/*.dmg \
+              --verify-tag \
+              --generate-notes \
+              --title "VisionHub ${GITHUB_REF_NAME#v}" \
+              $PRERELEASE
+          fi

@@ -5,6 +5,13 @@ O projeto utiliza [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
 ## [Não publicado]
 
+## [1.1.0-beta.2] - 2026-08-04
+
+### Corrigido
+
+- Publicação automática dos instaladores na GitHub Release.
+- Compatibilidade das actions com o runtime Node.js 24.
+
 ## [1.1.0-beta.1] - 2026-08-04
 
 ### Adicionado
@@ -19,5 +26,6 @@ O projeto utiliza [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 - Visualização ajustada para preservar data e hora presentes no vídeo.
 - Tentativas de conexão limitadas antes de exibir “Sem conexão”.
 
-[Não publicado]: https://github.com/ffelipeao/VisionHub/compare/v1.1.0-beta.1...HEAD
+[Não publicado]: https://github.com/ffelipeao/VisionHub/compare/v1.1.0-beta.2...HEAD
+[1.1.0-beta.2]: https://github.com/ffelipeao/VisionHub/compare/v1.1.0-beta.1...v1.1.0-beta.2
 [1.1.0-beta.1]: https://github.com/ffelipeao/VisionHub/compare/v1.0.0...v1.1.0-beta.1
