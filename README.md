@@ -123,6 +123,7 @@ CAMERA_2_NAME=Garagem
 CAMERA_3_NAME=Sala
 CAMERA_4_NAME=Quintal
 SUPPRESS_CONNECTION_ERRORS=off
+CONNECTION_ATTEMPTS=3
 
 WINDOW_WIDTH=1280
 WINDOW_HEIGHT=720
@@ -150,6 +151,7 @@ contém as credenciais do NVR.
 | `CAMERA_CHANNELS` | Não | Todos | Canais disponíveis, separados por vírgulas; os demais quadros mostram “Sem conexão”. |
 | `CAMERA_N_NAME` | Não | `Câmera N` | Nome exibido para cada câmera, substituindo `N` pelo canal de `1` a `8`. |
 | `SUPPRESS_CONNECTION_ERRORS` | Não | `off` | Use `on` para ocultar mensagens de erro de conexão do OpenCV/FFmpeg. |
+| `CONNECTION_ATTEMPTS` | Não | `3` | Tentativas consecutivas antes de manter o canal como “Sem conexão”. |
 | `WINDOW_WIDTH` | Não | `1280` | Largura usada para calcular a proporção da janela. |
 | `WINDOW_HEIGHT` | Não | `720` | Altura usada para calcular a proporção da janela. |
 | `WINDOW_SCALE` | Não | `0.92` | Fração da tela utilizada pela janela, entre `0.5` e `1.0`. |
@@ -157,7 +159,7 @@ contém as credenciais do NVR.
 | `UI_FPS` | Não | `15` | Frequência máxima de atualização da interface. |
 | `AUDIO_VOLUME` | Não | `50` | Volume inicial, entre `0` e `100`. |
 | `FFPLAY_PATH` | Não | Detectado no `PATH` | Caminho completo do executável `ffplay`. |
-| `RECONNECT_SECONDS` | Não | `3.0` | Espera inicial antes de tentar reconectar. |
+| `RECONNECT_SECONDS` | Não | `3.0` | Espera inicial entre tentativas de conexão. |
 | `RECONNECT_MAX_SECONDS` | Não | `60.0` | Espera máxima entre novas tentativas. |
 
 ### Canais e URL RTSP
@@ -277,9 +279,11 @@ Verifique:
 - Se usuário e senha possuem acesso à visualização ao vivo.
 - Se o número configurado em `CAMERAS` corresponde ao canal real.
 
-O VisionHub continuará tentando conectar com intervalos progressivos. Por
-padrão, as mensagens de erro são exibidas no terminal. Para ocultar mensagens
-repetitivas do OpenCV/FFmpeg, configure:
+O VisionHub realiza três tentativas de conexão com intervalos progressivos. Se
+nenhuma delas funcionar, o quadro permanece como “Sem conexão” e só volta a
+tentar quando o programa for reiniciado. Por padrão, as mensagens de erro são
+exibidas no terminal. Para ocultar mensagens repetitivas do OpenCV/FFmpeg,
+configure:
 
 ```env
 SUPPRESS_CONNECTION_ERRORS=on

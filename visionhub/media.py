@@ -10,6 +10,7 @@ from typing import Optional
 
 from .config import (
     AUDIO_VOLUME,
+    CONNECTION_ATTEMPTS,
     FFPLAY_PATH,
     RECONNECT_MAX_SECONDS,
     RECONNECT_SECONDS,
@@ -72,49 +73,58 @@ class CameraWorker(threading.Thread):
                 os.close(null_stderr)
 
     def run(self) -> None:
-        """Mantém a leitura ativa e aplica espera progressiva nas reconexões."""
+        """Lê o canal e encerra após falhas consecutivas de conexão."""
         if not self.config.available:
             return
 
         reconnect_delay = RECONNECT_SECONDS
+        failed_attempts = 0
 
-        while not self.stop_event.is_set():
+        while (
+            not self.stop_event.is_set()
+            and failed_attempts < CONNECTION_ATTEMPTS
+        ):
             capture: Optional[cv2.VideoCapture] = None
+            received_frame = False
             try:
                 self.status = "Conectando…"
                 capture = self._open_capture()
 
                 if not capture.isOpened():
                     self.status = "Sem conexão"
-                    self.stop_event.wait(reconnect_delay)
-                    reconnect_delay = min(
-                        reconnect_delay * 2,
-                        RECONNECT_MAX_SECONDS,
-                    )
-                    continue
+                else:
+                    self.status = "Online"
 
-                self.status = "Online"
-                reconnect_delay = RECONNECT_SECONDS
-
-                while not self.stop_event.is_set():
-                    ok, frame = capture.read()
-                    if not ok or frame is None:
-                        self.status = "Reconectando…"
-                        break
-                    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                    self._publish(frame)
+                    while not self.stop_event.is_set():
+                        ok, frame = capture.read()
+                        if not ok or frame is None:
+                            self.status = "Reconectando…"
+                            break
+                        received_frame = True
+                        failed_attempts = 0
+                        reconnect_delay = RECONNECT_SECONDS
+                        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                        self._publish(frame)
             except Exception:
                 self.status = "Erro — reconectando…"
             finally:
                 if capture is not None:
                     capture.release()
 
-            if not self.stop_event.is_set():
-                self.stop_event.wait(reconnect_delay)
-                reconnect_delay = min(
-                    reconnect_delay * 2,
-                    RECONNECT_MAX_SECONDS,
-                )
+            if self.stop_event.is_set():
+                return
+
+            if not received_frame:
+                failed_attempts += 1
+                self.status = "Sem conexão"
+                if failed_attempts >= CONNECTION_ATTEMPTS:
+                    return
+
+            self.stop_event.wait(reconnect_delay)
+            reconnect_delay = min(
+                reconnect_delay * 2,
+                RECONNECT_MAX_SECONDS,
+            )
 
 
 class AudioController:

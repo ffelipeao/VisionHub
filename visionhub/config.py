@@ -87,6 +87,7 @@ NVR_USER = required_env("NVR_USER")
 NVR_PASSWORD = required_env("NVR_PASSWORD")
 NVR_STREAM = int_env("NVR_STREAM", 1)
 CAMERA_COUNT = int_env("CAMERA_COUNT", 4)
+CONNECTION_ATTEMPTS = int_env("CONNECTION_ATTEMPTS", 3)
 SUPPRESS_CONNECTION_ERRORS = bool_env("SUPPRESS_CONNECTION_ERRORS", False)
 
 if SUPPRESS_CONNECTION_ERRORS:
@@ -106,6 +107,8 @@ if IMAGE_FIT not in {"cover", "contain"}:
     raise RuntimeError("A variável IMAGE_FIT deve ser 'cover' ou 'contain'.")
 if CAMERA_COUNT not in {4, 8}:
     raise RuntimeError("A variável CAMERA_COUNT deve ser 4 ou 8.")
+if CONNECTION_ATTEMPTS < 1:
+    raise RuntimeError("A variável CONNECTION_ATTEMPTS deve ser maior que zero.")
 if not 0 <= AUDIO_VOLUME <= 100:
     raise RuntimeError("A variável AUDIO_VOLUME deve estar entre 0 e 100.")
 
