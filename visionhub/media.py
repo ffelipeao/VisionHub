@@ -35,7 +35,7 @@ class CameraWorker(threading.Thread):
         self.config = config
         self.frames: queue.Queue = queue.Queue(maxsize=1)
         self.stop_event = threading.Event()
-        self.status = "Conectando…" if config.available else "Sem conexão"
+        self.status = "Conectando…"
 
     def stop(self) -> None:
         """Solicita o encerramento da leitura sem bloquear a interface."""
@@ -74,9 +74,6 @@ class CameraWorker(threading.Thread):
 
     def run(self) -> None:
         """Lê o canal e encerra após falhas consecutivas de conexão."""
-        if not self.config.available:
-            return
-
         reconnect_delay = RECONNECT_SECONDS
         failed_attempts = 0
 
@@ -149,7 +146,7 @@ class AudioController:
     def play(self, camera: CameraConfig, volume: int) -> bool:
         """Interrompe o áudio anterior e reproduz a câmera indicada."""
         self.stop()
-        if FFPLAY_PATH is None or not camera.available:
+        if FFPLAY_PATH is None:
             return False
 
         self.volume = max(0, min(100, int(volume)))
