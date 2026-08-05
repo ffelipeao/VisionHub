@@ -217,6 +217,30 @@ automaticamente ao publicar uma tag iniciada por `v`. Quando a tag corresponde
 para download público. Versões com sufixo, como `-beta.1`, são marcadas como
 pré-lançamento.
 
+### Instalando o aplicativo
+
+1. Baixe o arquivo correspondente ao seu sistema operacional na página de
+   releases do projeto.
+2. No Windows, execute o arquivo `VisionHub-*-Windows-Setup.exe` e siga as
+   instruções do instalador. No macOS, abra o arquivo `VisionHub-*-macOS.dmg` e
+   arraste o VisionHub para a pasta **Aplicativos**.
+3. Abra o VisionHub.
+4. Na primeira execução, informe os dados de acesso ao NVR: **IP ou nome do
+   NVR**, **porta RTSP**, **usuário** e **senha**. A porta RTSP padrão é `554`.
+5. Selecione **Salvar e continuar** para concluir a configuração e abrir as
+   câmeras.
+
+<p align="center">
+  <img src="assets/screens/tela_conf.png" alt="Tela de configuração inicial do VisionHub com os dados de acesso ao NVR" width="720">
+</p>
+
+Os dados não sensíveis são salvos em `~/.visionhub/.env`. No Windows, `~`
+representa a pasta do usuário, por exemplo `C:\Users\usuario`; no macOS,
+representa `/Users/usuario`. A senha não é gravada nesse arquivo: ela fica
+protegida pelo Cofre de Credenciais do Windows ou pelas Chaves do macOS. Nos
+próximos acessos, os dados são carregados automaticamente e essa tela não é
+exibida novamente.
+
 ### Publicando uma versão beta
 
 1. Atualize `__version__` em `visionhub/version.py` seguindo o formato
@@ -235,17 +259,6 @@ O workflow valida se a tag e `__version__` são iguais. Depois dos builds nativo
 ele publica a release `VisionHub 1.1.0-beta.3` com o `.exe` e o `.dmg`. Não crie
 a tag antes de concluir e enviar o commit da versão.
 
-Na primeira execução, o aplicativo solicita o endereço do NVR, a porta RTSP, o
-usuário e a senha. Os dados não sensíveis são salvos em:
-
-```text
-~/.visionhub/.env
-```
-
-No Windows, `~` representa a pasta do usuário, por exemplo
-`C:\Users\usuario`. No macOS, representa `/Users/usuario`. A senha não é gravada
-nesse arquivo: ela fica no Cofre de Credenciais do Windows ou nas Chaves do
-macOS. Nos próximos acessos, esses dados são carregados automaticamente.
 Durante o desenvolvimento, o programa continua reconhecendo o `.env` da raiz
 do projeto. Se uma instalação anterior possuir senha no `.env`, ela será
 migrada para o cofre seguro e removida do arquivo no próximo acesso.
