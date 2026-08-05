@@ -1,4 +1,4 @@
-name: Gerar instaladores
+name: Gerar instaladores e release
 
 on:
   workflow_dispatch:
@@ -26,17 +26,33 @@ jobs:
       - name: Instalar dependências
         run: python -m pip install -r requirements-build.txt
 
+      - name: Validar versão
+        id: version
+        shell: pwsh
+        run: |
+          $version = python -c "from visionhub.version import __version__; print(__version__)"
+          if ($env:GITHUB_REF_TYPE -eq "tag" -and $env:GITHUB_REF_NAME -ne "v$version") {
+            throw "A tag $env:GITHUB_REF_NAME não corresponde à versão v$version."
+          }
+          "VERSION=$version" >> $env:GITHUB_ENV
+          "version=$version" >> $env:GITHUB_OUTPUT
+
       - name: Gerar aplicação
         run: pyinstaller --noconfirm --clean --windowed --name VisionHub --collect-all cv2 --collect-all keyring main.py
 
       - name: Gerar instalador
-        run: '& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\windows\VisionHub.iss'
+        shell: pwsh
+        run: |
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" `
+            "/DMyAppVersion=$env:VERSION" `
+            "/DMyOutputBaseFilename=VisionHub-$env:VERSION-Windows-Setup" `
+            "installer\windows\VisionHub.iss"
 
       - name: Publicar instalador
         uses: actions/upload-artifact@v4
         with:
-          name: VisionHub-Windows-Setup
-          path: installer/output/VisionHub-Windows-Setup.exe
+          name: VisionHub-${{ steps.version.outputs.version }}-Windows
+          path: installer/output/VisionHub-${{ steps.version.outputs.version }}-Windows-Setup.exe
           if-no-files-found: error
 
   macos:
@@ -55,15 +71,71 @@ jobs:
       - name: Instalar dependências
         run: python -m pip install -r requirements-build.txt
 
+      - name: Validar versão
+        id: version
+        run: |
+          VERSION=$(python -c 'from visionhub.version import __version__; print(__version__)')
+          if [[ "$GITHUB_REF_TYPE" == "tag" && "$GITHUB_REF_NAME" != "v$VERSION" ]]; then
+            echo "A tag $GITHUB_REF_NAME não corresponde à versão v$VERSION."
+            exit 1
+          fi
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
       - name: Gerar aplicativo
         run: pyinstaller --noconfirm --clean --windowed --name VisionHub --collect-all cv2 --collect-all keyring main.py
 
+      - name: Aplicar versão ao aplicativo
+        run: |
+          BUILD_VERSION=${VERSION%%-*}
+          plutil -replace CFBundleShortVersionString -string "$VERSION" dist/VisionHub.app/Contents/Info.plist
+          plutil -replace CFBundleVersion -string "$BUILD_VERSION" dist/VisionHub.app/Contents/Info.plist
+          codesign --force --deep --sign - dist/VisionHub.app
+
       - name: Gerar imagem DMG
-        run: hdiutil create -volname VisionHub -srcfolder dist/VisionHub.app -ov -format UDZO dist/VisionHub-macOS.dmg
+        run: hdiutil create -volname "VisionHub $VERSION" -srcfolder dist/VisionHub.app -ov -format UDZO "dist/VisionHub-$VERSION-macOS.dmg"
 
       - name: Publicar instalador
         uses: actions/upload-artifact@v4
         with:
-          name: VisionHub-macOS
-          path: dist/VisionHub-macOS.dmg
+          name: VisionHub-${{ steps.version.outputs.version }}-macOS
+          path: dist/VisionHub-${{ steps.version.outputs.version }}-macOS.dmg
           if-no-files-found: error
+
+  release:
+    name: Publicar GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [windows, macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Baixar instalador do Windows
+        uses: actions/download-artifact@v4
+        with:
+          pattern: VisionHub-*-Windows
+          path: release-files/windows
+          merge-multiple: true
+
+      - name: Baixar instalador do macOS
+        uses: actions/download-artifact@v4
+        with:
+          pattern: VisionHub-*-macOS
+          path: release-files/macos
+          merge-multiple: true
+
+      - name: Publicar release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PRERELEASE=""
+          if [[ "$GITHUB_REF_NAME" == *-* ]]; then
+            PRERELEASE="--prerelease"
+          fi
+          gh release create "$GITHUB_REF_NAME" \
+            release-files/windows/*.exe \
+            release-files/macos/*.dmg \
+            --verify-tag \
+            --generate-notes \
+            --title "VisionHub ${GITHUB_REF_NAME#v}" \
+            $PRERELEASE

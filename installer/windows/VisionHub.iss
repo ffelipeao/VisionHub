@@ -1,5 +1,10 @@
 #define MyAppName "VisionHub"
-#define MyAppVersion "1.0.0"
+#ifndef MyAppVersion
+  #define MyAppVersion "1.1.0-beta.1"
+#endif
+#ifndef MyOutputBaseFilename
+  #define MyOutputBaseFilename "VisionHub-1.1.0-beta.1-Windows-Setup"
+#endif
 #define MyAppPublisher "ffelipeao"
 #define MyAppExeName "VisionHub.exe"
 
@@ -13,7 +18,7 @@ DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 PrivilegesRequired=lowest
 OutputDir={#SourcePath}\..\output
-OutputBaseFilename=VisionHub-Windows-Setup
+OutputBaseFilename={#MyOutputBaseFilename}
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern

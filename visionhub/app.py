@@ -13,6 +13,7 @@ from .config import (
     WINDOW_WIDTH,
 )
 from .media import AudioController, CameraWorker
+from .version import __version__
 from .widgets import CameraPanel
 
 
@@ -30,7 +31,9 @@ class VisionHubApp:
         self.active_audio_panel: Optional[CameraPanel] = None
         self.volume_update_id: Optional[str] = None
 
-        root.title(f"VisionHub — {len(CAMERAS)} Câmeras")
+        root.title(
+            f"VisionHub {__version__} — {len(CAMERAS)} Câmeras"
+        )
         self.configure_initial_geometry()
         root.minsize(max(800, (len(CAMERAS) // 2) * 280), 500)
         root.configure(bg="black")
