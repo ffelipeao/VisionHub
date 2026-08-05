@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import quote
 
+import keyring
 from dotenv import load_dotenv
 
 
@@ -16,14 +17,6 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 IS_PACKAGED = getattr(sys, "frozen", False)
 CONFIG_DIR = Path.home() / ".visionhub" if IS_PACKAGED else PROJECT_ROOT
 CONFIG_FILE = CONFIG_DIR / ".env"
-
-if IS_PACKAGED and not CONFIG_FILE.exists():
-    resource_root = Path(getattr(sys, "_MEIPASS", PROJECT_ROOT))
-    config_example = resource_root / ".env.example"
-    if config_example.exists():
-        CONFIG_DIR.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(config_example, CONFIG_FILE)
-
 load_dotenv(CONFIG_FILE)
 
 os.environ.setdefault("OPENCV_FFMPEG_CAPTURE_OPTIONS", "rtsp_transport;tcp")
@@ -73,7 +66,16 @@ def bool_env(name: str, default: bool = False) -> bool:
 NVR_IP = required_env("NVR_IP")
 NVR_RTSP_PORT = int_env("NVR_RTSP_PORT", 554)
 NVR_USER = required_env("NVR_USER")
-NVR_PASSWORD = required_env("NVR_PASSWORD")
+NVR_PASSWORD = os.getenv("NVR_PASSWORD", "").strip()
+if not NVR_PASSWORD:
+    NVR_PASSWORD = keyring.get_password(
+        "VisionHub",
+        f"{NVR_IP}:{NVR_USER}",
+    ) or ""
+if not NVR_PASSWORD:
+    raise RuntimeError(
+        "A senha do NVR não foi encontrada no cofre seguro do sistema."
+    )
 NVR_STREAM = int_env("NVR_STREAM", 1)
 CAMERA_COUNT = int_env("CAMERA_COUNT", 4)
 CONNECTION_ATTEMPTS = int_env("CONNECTION_ATTEMPTS", 3)

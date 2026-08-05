@@ -4,3 +4,4 @@ build/
 dist/
 installer/output/
 *.spec
+.DS_Store

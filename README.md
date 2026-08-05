@@ -7,9 +7,9 @@ necessidade. O programa permite
 ampliar uma câmera, entrar em tela cheia, reproduzir o áudio de um canal por vez
 e controlar o volume individualmente.
 
-O vídeo é processado pelo OpenCV e o áudio é reproduzido pelo `ffplay`. As
-credenciais e demais configurações ficam em um arquivo `.env`, sem necessidade
-de alterar o código-fonte.
+O vídeo é processado pelo OpenCV e o áudio é reproduzido pelo `ffplay`. O
+assistente inicial coleta os dados do NVR, protege a senha no cofre de
+credenciais do sistema e mantém as demais configurações em um arquivo `.env`.
 
 ## Licença
 
@@ -206,18 +206,20 @@ Ele pode ser executado manualmente na aba **Actions** do GitHub ou
 automaticamente ao publicar uma tag iniciada por `v`, como `v1.0.0`. Os arquivos
 ficam disponíveis como artefatos da execução.
 
-Na primeira execução, o aplicativo cria automaticamente o arquivo de
-configuração em:
+Na primeira execução, o aplicativo solicita o endereço do NVR, a porta RTSP, o
+usuário e a senha. Os dados não sensíveis são salvos em:
 
 ```text
 ~/.visionhub/.env
 ```
 
 No Windows, `~` representa a pasta do usuário, por exemplo
-`C:\Users\usuario`. No macOS, representa `/Users/usuario`. Use o conteúdo de
-`.env.example` como modelo. Preencha esse arquivo e abra o programa novamente.
-Durante o desenvolvimento, o programa continua usando o `.env` localizado na
-raiz do projeto.
+`C:\Users\usuario`. No macOS, representa `/Users/usuario`. A senha não é gravada
+nesse arquivo: ela fica no Cofre de Credenciais do Windows ou nas Chaves do
+macOS. Nos próximos acessos, esses dados são carregados automaticamente.
+Durante o desenvolvimento, o programa continua reconhecendo o `.env` da raiz
+do projeto. Se uma instalação anterior possuir senha no `.env`, ela será
+migrada para o cofre seguro e removida do arquivo no próximo acesso.
 
 O `ffplay` não é incluído nos instaladores. Para usar áudio, instale o FFmpeg e
 deixe o executável disponível no `PATH`, conforme descrito nos requisitos.
@@ -349,6 +351,8 @@ sudo apt install python3-tk
 ## Segurança
 
 - Não publique o arquivo `.env`.
+- Nos aplicativos instalados, a senha é armazenada pelo cofre seguro do sistema
+  operacional e não é escrita no `.env`.
 - Use um usuário do NVR com apenas as permissões necessárias.
 - Evite expor a porta RTSP diretamente à internet.
 - Prefira executar o VisionHub na mesma rede local ou por uma VPN confiável.
