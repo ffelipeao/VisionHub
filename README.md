@@ -72,7 +72,7 @@ ffplay -version
 Clone ou abra o projeto e entre em sua pasta:
 
 ```bash
-cd visuonhub
+cd VisionHub 
 ```
 
 Crie um ambiente virtual:
