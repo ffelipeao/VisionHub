@@ -14,9 +14,6 @@ from dotenv import load_dotenv
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 load_dotenv(PROJECT_ROOT / ".env")
 
-# Uma câmera offline é uma condição esperada. O OpenCV não deve inundar o
-# terminal com mensagens internas durante as tentativas de reconexão.
-os.environ.setdefault("OPENCV_LOG_LEVEL", "SILENT")
 os.environ.setdefault("OPENCV_FFMPEG_CAPTURE_OPTIONS", "rtsp_transport;tcp")
 
 
@@ -44,12 +41,32 @@ def int_env(name: str, default: int | None = None) -> int:
         raise RuntimeError(f"A variável {name} deve ser um número inteiro.") from error
 
 
+def bool_env(name: str, default: bool = False) -> bool:
+    """Lê uma variável booleana e informa valores inválidos claramente."""
+    raw_value = os.getenv(name)
+    if raw_value is None or not raw_value.strip():
+        return default
+
+    value = raw_value.strip().lower()
+    if value in {"1", "true", "yes", "on", "sim"}:
+        return True
+    if value in {"0", "false", "no", "off", "nao", "não"}:
+        return False
+    raise RuntimeError(
+        f"A variável {name} deve ser 'true' ou 'false'."
+    )
+
+
 NVR_IP = required_env("NVR_IP")
 NVR_RTSP_PORT = int_env("NVR_RTSP_PORT", 554)
 NVR_USER = required_env("NVR_USER")
 NVR_PASSWORD = required_env("NVR_PASSWORD")
 NVR_STREAM = int_env("NVR_STREAM", 1)
 CAMERA_COUNT = int_env("CAMERA_COUNT", 4)
+SUPPRESS_CONNECTION_ERRORS = bool_env("SUPPRESS_CONNECTION_ERRORS", False)
+
+if SUPPRESS_CONNECTION_ERRORS:
+    os.environ.setdefault("OPENCV_LOG_LEVEL", "SILENT")
 
 WINDOW_WIDTH = int_env("WINDOW_WIDTH", 1280)
 WINDOW_HEIGHT = int_env("WINDOW_HEIGHT", 720)

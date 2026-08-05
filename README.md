@@ -28,7 +28,7 @@ licença sejam mantidos como citação da fonte original.
 - Apenas uma câmera com áudio ativo por vez, evitando sobreposição.
 - Reconexão automática com espera progressiva.
 - Indicação de câmera online, desconectada ou em reconexão.
-- Logs repetitivos do FFmpeg suprimidos quando uma câmera está ausente.
+- Opção para exibir ou suprimir mensagens de erro de conexão do OpenCV/FFmpeg.
 
 ## Requisitos
 
@@ -121,6 +121,7 @@ CAMERA_1_NAME=Entrada
 CAMERA_2_NAME=Garagem
 CAMERA_3_NAME=Sala
 CAMERA_4_NAME=Quintal
+SUPPRESS_CONNECTION_ERRORS=off
 
 WINDOW_WIDTH=1280
 WINDOW_HEIGHT=720
@@ -146,6 +147,7 @@ contém as credenciais do NVR.
 | `NVR_STREAM` | Não | `1` | `0` para stream principal ou `1` para substream. |
 | `CAMERA_COUNT` | Não | `4` | Quantidade de câmeras: `4` (grade 2×2) ou `8` (grade 4×2). |
 | `CAMERA_N_NAME` | Não | `Câmera N` | Nome exibido para cada câmera, substituindo `N` pelo canal de `1` a `8`. |
+| `SUPPRESS_CONNECTION_ERRORS` | Não | `off` | Use `on` para ocultar mensagens de erro de conexão do OpenCV/FFmpeg. |
 | `WINDOW_WIDTH` | Não | `1280` | Largura usada para calcular a proporção da janela. |
 | `WINDOW_HEIGHT` | Não | `720` | Altura usada para calcular a proporção da janela. |
 | `WINDOW_SCALE` | Não | `0.92` | Fração da tela utilizada pela janela, entre `0.5` e `1.0`. |
@@ -260,8 +262,13 @@ Verifique:
 - Se usuário e senha possuem acesso à visualização ao vivo.
 - Se o número configurado em `CAMERAS` corresponde ao canal real.
 
-O VisionHub continuará tentando conectar com intervalos progressivos, sem
-imprimir o mesmo erro constantemente.
+O VisionHub continuará tentando conectar com intervalos progressivos. Por
+padrão, as mensagens de erro são exibidas no terminal. Para ocultar mensagens
+repetitivas do OpenCV/FFmpeg, configure:
+
+```env
+SUPPRESS_CONNECTION_ERRORS=on
+```
 
 ### Erro `DESCRIBE failed: 500 Internal Server Error`
 

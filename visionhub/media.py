@@ -13,6 +13,7 @@ from .config import (
     FFPLAY_PATH,
     RECONNECT_MAX_SECONDS,
     RECONNECT_SECONDS,
+    SUPPRESS_CONNECTION_ERRORS,
     CameraConfig,
 )
 
@@ -51,8 +52,13 @@ class CameraWorker(threading.Thread):
             pass
 
     def _open_capture(self) -> cv2.VideoCapture:
-        """Abre o RTSP de forma serializada e sem logs esperados de desconexão."""
+        """Abre o RTSP e aplica a configuração de mensagens de conexão."""
         with RTSP_CONNECTION_LOCK:
+            if not SUPPRESS_CONNECTION_ERRORS:
+                capture = cv2.VideoCapture(self.config.url, cv2.CAP_FFMPEG)
+                capture.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+                return capture
+
             saved_stderr = os.dup(2)
             null_stderr = os.open(os.devnull, os.O_WRONLY)
             try:
