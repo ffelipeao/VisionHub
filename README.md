@@ -26,6 +26,7 @@ licença sejam mantidos como citação da fonte original.
 - Reprodução de áudio iniciada no modo silencioso.
 - Controle de volume por câmera.
 - Apenas uma câmera com áudio ativo por vez, evitando sobreposição.
+- Instância única para evitar acessos duplicados ao cofre de credenciais.
 - Reconexão automática com espera progressiva.
 - Indicação de câmera online, desconectada ou em reconexão.
 - Opção para exibir ou suprimir mensagens de erro de conexão do OpenCV/FFmpeg.
