@@ -19,7 +19,7 @@ def resource_path(relative_path: str) -> Path:
 
 
 def show_splash(root: tk.Tk) -> None:
-    """Exibe a imagem de apresentação centralizada durante o carregamento."""
+    """Exibe a apresentação dentro da janela principal durante o carregamento."""
     image = Image.open(resource_path("assets/VisuonHub.png"))
     max_size = min(
         720,
@@ -29,7 +29,7 @@ def show_splash(root: tk.Tk) -> None:
     image.thumbnail((max_size, max_size), Image.Resampling.LANCZOS)
     photo = ImageTk.PhotoImage(image)
 
-    root.overrideredirect(True)
+    root.title("VisionHub — Carregando")
     root.configure(bg="black")
     width, height = image.size
     x = max(0, (root.winfo_screenwidth() - width) // 2)
@@ -64,8 +64,6 @@ def main() -> None:
         """Fecha a apresentação e inicia a configuração e a aplicação."""
         for widget in root.winfo_children():
             widget.destroy()
-        root.overrideredirect(False)
-        root.withdraw()
 
         from visionhub.setup import ensure_initial_config
 
@@ -76,7 +74,6 @@ def main() -> None:
         from visionhub import VisionHubApp
 
         VisionHubApp(root)
-        root.deiconify()
 
     root.after(SPLASH_DURATION_MS, start_application)
     try:
