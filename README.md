@@ -11,6 +11,12 @@ O vídeo é processado pelo OpenCV e o áudio é reproduzido pelo `ffplay`. As
 credenciais e demais configurações ficam em um arquivo `.env`, sem necessidade
 de alterar o código-fonte.
 
+## Licença
+
+Este projeto é distribuído sob a [Licença MIT](LICENSE). O programa pode ser
+usado, copiado, modificado e distribuído, desde que o aviso de autoria e a
+licença sejam mantidos como citação da fonte original.
+
 ## Recursos
 
 - Visualização simultânea de quatro canais RTSP.
