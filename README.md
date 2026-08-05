@@ -1,5 +1,9 @@
 # VisionHub
 
+<p align="center">
+  <img src="assets/VisuonHub.png" alt="Apresentação do VisionHub" width="720">
+</p>
+
 VisionHub é um reprodutor desktop pensado para capturar e exibir imagens de
 quaisquer câmeras de segurança compatíveis com o protocolo RTSP. O projeto pode
 usar um mosaico 2×2 para quatro câmeras ou 4×2 para oito câmeras, conforme a
