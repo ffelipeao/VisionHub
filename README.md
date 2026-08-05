@@ -117,6 +117,10 @@ NVR_USER=admin
 NVR_PASSWORD=troque_por_sua_senha
 NVR_STREAM=1
 CAMERA_COUNT=4
+CAMERA_1_NAME=Entrada
+CAMERA_2_NAME=Garagem
+CAMERA_3_NAME=Sala
+CAMERA_4_NAME=Quintal
 
 WINDOW_WIDTH=1280
 WINDOW_HEIGHT=720
@@ -141,6 +145,7 @@ contém as credenciais do NVR.
 | `NVR_PASSWORD` | Sim | — | Senha do usuário. |
 | `NVR_STREAM` | Não | `1` | `0` para stream principal ou `1` para substream. |
 | `CAMERA_COUNT` | Não | `4` | Quantidade de câmeras: `4` (grade 2×2) ou `8` (grade 4×2). |
+| `CAMERA_N_NAME` | Não | `Câmera N` | Nome exibido para cada câmera, substituindo `N` pelo canal de `1` a `8`. |
 | `WINDOW_WIDTH` | Não | `1280` | Largura usada para calcular a proporção da janela. |
 | `WINDOW_HEIGHT` | Não | `720` | Altura usada para calcular a proporção da janela. |
 | `WINDOW_SCALE` | Não | `0.92` | Fração da tela utilizada pela janela, entre `0.5` e `1.0`. |
@@ -165,6 +170,18 @@ Para usar oito câmeras, configure:
 ```env
 CAMERA_COUNT=8
 ```
+
+Os nomes exibidos nos painéis podem ser personalizados no `.env`:
+
+```env
+CAMERA_1_NAME=Entrada principal
+CAMERA_2_NAME=Garagem
+CAMERA_3_NAME=Sala
+CAMERA_4_NAME=Quintal
+```
+
+Quando um nome não é preenchido, o programa utiliza automaticamente
+`Câmera N`, sendo `N` o número do canal.
 
 ## Executando
 

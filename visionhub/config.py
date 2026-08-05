@@ -88,6 +88,9 @@ class CameraConfig:
 
 
 CAMERAS = [
-    CameraConfig(f"Câmera {channel}", channel)
+    CameraConfig(
+        os.getenv(f"CAMERA_{channel}_NAME", "").strip() or f"Câmera {channel}",
+        channel,
+    )
     for channel in range(1, CAMERA_COUNT + 1)
 ]
