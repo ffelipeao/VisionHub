@@ -117,6 +117,7 @@ NVR_USER=admin
 NVR_PASSWORD=troque_por_sua_senha
 NVR_STREAM=1
 CAMERA_COUNT=4
+CAMERA_CHANNELS=1,2,3,4
 CAMERA_1_NAME=Entrada
 CAMERA_2_NAME=Garagem
 CAMERA_3_NAME=Sala
@@ -146,6 +147,7 @@ contém as credenciais do NVR.
 | `NVR_PASSWORD` | Sim | — | Senha do usuário. |
 | `NVR_STREAM` | Não | `1` | `0` para stream principal ou `1` para substream. |
 | `CAMERA_COUNT` | Não | `4` | Quantidade de câmeras: `4` (grade 2×2) ou `8` (grade 4×2). |
+| `CAMERA_CHANNELS` | Não | Todos | Canais disponíveis, separados por vírgulas; os demais quadros mostram “Sem conexão”. |
 | `CAMERA_N_NAME` | Não | `Câmera N` | Nome exibido para cada câmera, substituindo `N` pelo canal de `1` a `8`. |
 | `SUPPRESS_CONNECTION_ERRORS` | Não | `off` | Use `on` para ocultar mensagens de erro de conexão do OpenCV/FFmpeg. |
 | `WINDOW_WIDTH` | Não | `1280` | Largura usada para calcular a proporção da janela. |
@@ -172,6 +174,19 @@ Para usar oito câmeras, configure:
 ```env
 CAMERA_COUNT=8
 ```
+
+Se o mosaico tiver oito posições, mas o NVR possuir apenas quatro canais,
+informe explicitamente os canais disponíveis para evitar que o equipamento
+repita streams em posições inexistentes:
+
+```env
+CAMERA_COUNT=8
+CAMERA_CHANNELS=1,2,3,4
+```
+
+Nesse caso, os quadros de 5 a 8 mostram apenas “Sem conexão” e nenhuma conexão
+RTSP é iniciada para eles. Quando `CAMERA_CHANNELS` não é informado, todos os
+canais de `1` até `CAMERA_COUNT` são considerados disponíveis.
 
 Os nomes exibidos nos painéis podem ser personalizados no `.env`:
 

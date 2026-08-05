@@ -58,6 +58,29 @@ def bool_env(name: str, default: bool = False) -> bool:
     )
 
 
+def channel_set_env(name: str, camera_count: int) -> set[int]:
+    """Lê os canais disponíveis ou habilita todos os quadros por padrão."""
+    raw_value = os.getenv(name)
+    if raw_value is None or not raw_value.strip():
+        return set(range(1, camera_count + 1))
+
+    try:
+        channels = {int(value.strip()) for value in raw_value.split(",")}
+    except ValueError as error:
+        raise RuntimeError(
+            f"A variável {name} deve conter números separados por vírgulas."
+        ) from error
+
+    invalid_channel = any(
+        channel < 1 or channel > camera_count for channel in channels
+    )
+    if not channels or invalid_channel:
+        raise RuntimeError(
+            f"Os canais de {name} devem estar entre 1 e {camera_count}."
+        )
+    return channels
+
+
 NVR_IP = required_env("NVR_IP")
 NVR_RTSP_PORT = int_env("NVR_RTSP_PORT", 554)
 NVR_USER = required_env("NVR_USER")
@@ -86,17 +109,26 @@ if CAMERA_COUNT not in {4, 8}:
 if not 0 <= AUDIO_VOLUME <= 100:
     raise RuntimeError("A variável AUDIO_VOLUME deve estar entre 0 e 100.")
 
+CAMERA_CHANNELS = channel_set_env("CAMERA_CHANNELS", CAMERA_COUNT)
+
 
 @dataclass(frozen=True)
 class CameraConfig:
     """Identifica uma câmera e produz seu endereço RTSP."""
 
     name: str
-    channel: int
+    channel: int | None
+
+    @property
+    def available(self) -> bool:
+        """Indica se o quadro possui um canal RTSP configurado."""
+        return self.channel is not None
 
     @property
     def url(self) -> str:
         """Monta a URL RTSP protegendo caracteres especiais das credenciais."""
+        if self.channel is None:
+            raise RuntimeError(f"{self.name} não possui um canal RTSP configurado.")
         user = quote(NVR_USER, safe="")
         password = quote(NVR_PASSWORD, safe="")
         return (
@@ -108,7 +140,7 @@ class CameraConfig:
 CAMERAS = [
     CameraConfig(
         os.getenv(f"CAMERA_{channel}_NAME", "").strip() or f"Câmera {channel}",
-        channel,
+        channel if channel in CAMERA_CHANNELS else None,
     )
     for channel in range(1, CAMERA_COUNT + 1)
 ]

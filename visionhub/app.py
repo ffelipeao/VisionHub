@@ -126,6 +126,10 @@ class VisionHubApp:
 
     def toggle_audio(self, panel: CameraPanel) -> None:
         """Ativa uma câmera e silencia qualquer outra que esteja tocando."""
+        if not panel.worker.config.available:
+            panel.status_label.config(text="Sem conexão")
+            return
+
         if self.active_audio_panel is panel and self.audio.playing:
             self.audio.stop()
             self.active_audio_panel = None
