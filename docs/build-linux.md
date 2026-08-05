@@ -12,6 +12,9 @@ sudo apt update
 sudo apt install python3 python3-venv python3-tk ffmpeg dpkg-dev
 ```
 
+O projeto deve conter o ícone principal `assets/icon.png` e as versões de
+16 a 512 pixels em `assets/linux/`.
+
 ## Preparar o ambiente
 
 Na raiz do projeto:
@@ -28,8 +31,12 @@ python -m pip install -r requirements-build.txt
 ```bash
 rm -rf build dist VisionHub.spec package
 pyinstaller --noconfirm --clean --windowed --name VisionHub \
+  --icon assets/icon.png \
   --collect-all cv2 --collect-all keyring main.py
 ```
+
+No Linux, a exibição do ícone no menu de aplicativos é definida pelo pacote
+`.deb`; por isso, os PNGs também serão copiados para o tema de ícones do sistema.
 
 Teste antes de empacotar:
 
@@ -43,10 +50,33 @@ Monte a estrutura do pacote:
 
 ```bash
 VERSION=$(python -c 'from visionhub.version import __version__; print(__version__)')
-mkdir -p package/DEBIAN package/opt/visionhub package/usr/bin
+mkdir -p package/DEBIAN package/opt/visionhub package/usr/bin \
+  package/usr/share/applications
 cp -a dist/VisionHub/. package/opt/visionhub/
 ln -s /opt/visionhub/VisionHub package/usr/bin/visionhub
+
+for size in 16 24 32 48 64 128 256 512; do
+  mkdir -p "package/usr/share/icons/hicolor/${size}x${size}/apps"
+  cp "assets/linux/icon-${size}.png" \
+    "package/usr/share/icons/hicolor/${size}x${size}/apps/visionhub.png"
+done
 ```
+
+Crie `package/usr/share/applications/visionhub.desktop` com este conteúdo:
+
+```ini
+[Desktop Entry]
+Type=Application
+Name=VisionHub
+Comment=Visualizador de câmeras RTSP
+Exec=visionhub
+Icon=visionhub
+Terminal=false
+Categories=AudioVideo;Video;Security;
+```
+
+O valor `Icon=visionhub` referencia os PNGs copiados para o tema `hicolor`, sem
+extensão ou caminho absoluto.
 
 Crie `package/DEBIAN/control` com o conteúdo abaixo, substituindo `VERSAO` pelo
 valor exibido pelo comando `echo "$VERSION"`:
@@ -88,4 +118,3 @@ sudo apt remove visionhub
 
 O pacote acima é destinado a computadores `amd64`. Em outra arquitetura,
 ajuste o campo `Architecture` e o nome do arquivo.
-

@@ -8,6 +8,7 @@ Este processo cria `dist/VisionHub.app` e, em seguida, o instalador
 - macOS com Python 3.10 ou superior.
 - Ferramentas de linha de comando do Xcode.
 - FFmpeg instalado no computador de destino caso o áudio seja utilizado.
+- Ícone `assets/icon.icns` presente no projeto.
 
 Instale as ferramentas necessárias:
 
@@ -39,8 +40,12 @@ Gere o aplicativo:
 
 ```bash
 pyinstaller --noconfirm --clean --windowed --name VisionHub \
+  --icon assets/icon.icns \
   --collect-all cv2 --collect-all keyring main.py
 ```
+
+O PyInstaller incorpora `assets/icon.icns` ao pacote `.app`. O mesmo ícone é
+mantido no DMG porque a imagem de disco é criada a partir desse aplicativo.
 
 Aplique a versão e uma assinatura local ad hoc:
 
@@ -81,4 +86,3 @@ open "dist/VisionHub-$VERSION-macOS.dmg"
 ```
 
 Arraste `VisionHub.app` para a pasta **Aplicativos** e teste a cópia instalada.
-

@@ -12,6 +12,7 @@ Execute os comandos no PowerShell, a partir da raiz do projeto.
 - [Inno Setup 6](https://jrsoftware.org/isinfo.php).
 - FFmpeg disponível no `PATH` do computador de destino caso o áudio seja
   utilizado.
+- Ícone `assets\icon.ico` presente no projeto.
 
 ## Preparar o ambiente
 
@@ -28,8 +29,13 @@ python -m pip install -r requirements-build.txt
 ```powershell
 Remove-Item build, dist, VisionHub.spec -Recurse -Force -ErrorAction SilentlyContinue
 pyinstaller --noconfirm --clean --windowed --name VisionHub `
+  --icon assets\icon.ico `
   --collect-all cv2 --collect-all keyring main.py
 ```
+
+O PyInstaller incorpora `assets\icon.ico` ao executável. O arquivo contém as
+resoluções necessárias para o Explorador de Arquivos, a barra de tarefas e os
+atalhos do Windows.
 
 Teste a aplicação antes de gerar o instalador:
 
@@ -53,6 +59,10 @@ O instalador será criado em:
 installer\output\VisionHub-VERSAO-Windows-Setup.exe
 ```
 
+O Inno Setup usa o mesmo `assets\icon.ico` como ícone do instalador. Essa
+configuração está definida em `installer\windows\VisionHub.iss` por meio da
+opção `SetupIconFile`.
+
 ## Instalar e testar
 
 Abra o arquivo gerado pelo Explorador de Arquivos ou pelo PowerShell:
@@ -65,4 +75,3 @@ Conclua o assistente, abra o VisionHub pelo Menu Iniciar e confirme que a tela
 de configuração inicial é exibida. O instalador local não possui assinatura de
 código; por isso, o Windows SmartScreen pode apresentar um aviso. Distribuições
 públicas devem ser assinadas com um certificado de assinatura de código.
-

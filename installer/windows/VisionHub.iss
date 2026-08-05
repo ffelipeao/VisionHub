@@ -25,6 +25,7 @@ WizardStyle=modern
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 LicenseFile={#SourcePath}\..\..\LICENSE
+SetupIconFile={#SourcePath}\..\..\assets\icon.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 
 [Files]
