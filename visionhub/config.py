@@ -56,7 +56,7 @@ UI_FPS = int_env("UI_FPS", 15)
 RECONNECT_SECONDS = float(os.getenv("RECONNECT_SECONDS", "3.0"))
 RECONNECT_MAX_SECONDS = float(os.getenv("RECONNECT_MAX_SECONDS", "60.0"))
 WINDOW_SCALE = float(os.getenv("WINDOW_SCALE", "0.92"))
-IMAGE_FIT = os.getenv("IMAGE_FIT", "cover").strip().lower()
+IMAGE_FIT = os.getenv("IMAGE_FIT", "contain").strip().lower()
 AUDIO_VOLUME = int_env("AUDIO_VOLUME", 50)
 FFPLAY_PATH = shutil.which(os.getenv("FFPLAY_PATH", "ffplay"))
 

@@ -216,11 +216,15 @@ class CameraPanel(tk.Frame):
         self.worker = worker
         self.photo: Optional[ImageTk.PhotoImage] = None
 
+        self.control_bar = tk.Frame(self, bg="#111", height=38)
+        self.control_bar.pack(fill="x", side="top")
+        self.control_bar.pack_propagate(False)
+
         self.video_label = tk.Label(self, bg="black")
         self.video_label.pack(fill="both", expand=True)
 
         self.title_label = tk.Label(
-            self,
+            self.control_bar,
             text=worker.config.name,
             bg="#111",
             fg="white",
@@ -232,7 +236,7 @@ class CameraPanel(tk.Frame):
         self.title_label.place(x=0, y=0, relwidth=1)
 
         self.status_label = tk.Label(
-            self,
+            self.control_bar,
             text="Conectando…",
             bg="#111",
             fg="white",
@@ -242,19 +246,21 @@ class CameraPanel(tk.Frame):
         )
         self.status_label.place(relx=1, x=-225, y=5, anchor="ne")
 
-        self.fullscreen_button = IconButton(self, "fullscreen", on_fullscreen)
+        self.fullscreen_button = IconButton(
+            self.control_bar, "fullscreen", on_fullscreen
+        )
         self.fullscreen_button.place(
             relx=1, x=-8, y=5, anchor="ne", width=32, height=28
         )
 
-        self.expand_button = IconButton(self, "expand", on_expand)
+        self.expand_button = IconButton(self.control_bar, "expand", on_expand)
         self.expand_button.place(relx=1, x=-43, y=5, anchor="ne", width=32, height=28)
 
-        self.audio_button = IconButton(self, "audio_off", on_audio)
+        self.audio_button = IconButton(self.control_bar, "audio_off", on_audio)
         self.audio_button.place(relx=1, x=-78, y=5, anchor="ne", width=32, height=28)
 
         self.volume_scale = tk.Scale(
-            self,
+            self.control_bar,
             from_=0,
             to=100,
             orient="horizontal",
