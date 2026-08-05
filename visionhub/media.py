@@ -26,6 +26,13 @@ import cv2
 RTSP_CONNECTION_LOCK = threading.Lock()
 
 
+def _audio_creation_flags() -> int:
+    """Impede que o ffplay abra uma janela de terminal no Windows."""
+    if os.name == "nt":
+        return subprocess.CREATE_NO_WINDOW
+    return 0
+
+
 class CameraWorker(threading.Thread):
     """Lê uma câmera em segundo plano e conserva apenas o quadro mais recente."""
 
@@ -166,6 +173,7 @@ class AudioController:
             stdin=subprocess.DEVNULL,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
+            creationflags=_audio_creation_flags(),
         )
         self.active_camera = camera
         return True
