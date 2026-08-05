@@ -198,6 +198,9 @@ python main.py
 
 ## Instaladores
 
+Para gerar e testar instaladores localmente, consulte os guias de build para
+[macOS, Linux e Windows](docs/README.md).
+
 O workflow `Gerar instaladores e release` cria automaticamente arquivos com o
 número definido em `visionhub/version.py`, por exemplo:
 
