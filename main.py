@@ -7,7 +7,6 @@ import tkinter as tk
 def main() -> None:
     """Cria a janela principal e inicia o loop da interface gráfica."""
     root = tk.Tk()
-    root.withdraw()
 
     from visionhub.setup import ensure_initial_config
 
@@ -17,7 +16,6 @@ def main() -> None:
 
     from visionhub import VisionHubApp
 
-    root.deiconify()
     VisionHubApp(root)
     root.mainloop()
 

@@ -68,10 +68,15 @@ NVR_RTSP_PORT = int_env("NVR_RTSP_PORT", 554)
 NVR_USER = required_env("NVR_USER")
 NVR_PASSWORD = os.getenv("NVR_PASSWORD", "").strip()
 if not NVR_PASSWORD:
-    NVR_PASSWORD = keyring.get_password(
-        "VisionHub",
-        f"{NVR_IP}:{NVR_USER}",
-    ) or ""
+    try:
+        NVR_PASSWORD = keyring.get_password(
+            "VisionHub",
+            f"{NVR_IP}:{NVR_USER}",
+        ) or ""
+    except keyring.errors.KeyringError as error:
+        raise RuntimeError(
+            "O acesso ao cofre de credenciais do sistema foi negado."
+        ) from error
 if not NVR_PASSWORD:
     raise RuntimeError(
         "A senha do NVR não foi encontrada no cofre seguro do sistema."

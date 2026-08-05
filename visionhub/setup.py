@@ -153,6 +153,16 @@ def ensure_initial_config(root: tk.Tk) -> bool:
         and plaintext_password
         and plaintext_password not in PASSWORD_PLACEHOLDERS
     ):
+        root.title("VisionHub — Protegendo credenciais")
+        root.geometry("460x120")
+        migration_status = ttk.Label(
+            root,
+            text="Protegendo a senha no cofre de credenciais do sistema…",
+            padding=24,
+        )
+        migration_status.pack(fill="both", expand=True)
+        root.update_idletasks()
+        root.lift()
         try:
             keyring.set_password(
                 SERVICE_NAME,
@@ -161,7 +171,7 @@ def ensure_initial_config(root: tk.Tk) -> bool:
             )
             unset_key(CONFIG_FILE, "NVR_PASSWORD")
             CONFIG_FILE.chmod(0o600)
-            os.environ.pop("NVR_PASSWORD", None)
+            os.environ["NVR_PASSWORD"] = plaintext_password
         except (OSError, keyring.errors.KeyringError) as error:
             messagebox.showerror(
                 "Não foi possível proteger a senha",
@@ -170,14 +180,18 @@ def ensure_initial_config(root: tk.Tk) -> bool:
                 parent=root,
             )
             return False
+        finally:
+            migration_status.destroy()
         return True
 
+    stored_password = _stored_password(host, user)
     if (
         host
         and user
         and plaintext_password not in PASSWORD_PLACEHOLDERS
-        and _stored_password(host, user)
+        and stored_password
     ):
+        os.environ["NVR_PASSWORD"] = stored_password
         return True
 
     dialog = InitialSetupDialog(root)
