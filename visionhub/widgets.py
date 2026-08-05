@@ -309,7 +309,13 @@ class CameraPanel(tk.Frame):
                 centering=(0.5, 0.5),
             )
 
-        image.thumbnail((width, height), Image.Resampling.LANCZOS)
+        scale = min(width / image.width, height / image.height)
+        resized_width = max(1, round(image.width * scale))
+        resized_height = max(1, round(image.height * scale))
+        image = image.resize(
+            (resized_width, resized_height),
+            Image.Resampling.LANCZOS,
+        )
         canvas = Image.new("RGB", (width, height), "black")
         x = (width - image.width) // 2
         y = (height - image.height) // 2
