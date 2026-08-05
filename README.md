@@ -224,6 +224,10 @@ migrada para o cofre seguro e removida do arquivo no próximo acesso.
 O `ffplay` não é incluído nos instaladores. Para usar áudio, instale o FFmpeg e
 deixe o executável disponível no `PATH`, conforme descrito nos requisitos.
 
+Para builds locais no macOS com Python 3.14 e Tcl/Tk 9, utilize o PyInstaller
+definido em `requirements-build.txt`. Versões anteriores à `6.18` não possuem o
+suporte necessário para esse conjunto de versões.
+
 O áudio começa fechado. O VisionHub não abre nenhuma reprodução de áudio até
 que o botão de alto-falante de uma câmera seja acionado.
 
