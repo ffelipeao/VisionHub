@@ -53,7 +53,8 @@ def bool_env(name: str, default: bool = False) -> bool:
     if value in {"0", "false", "no", "off", "nao", "não"}:
         return False
     raise RuntimeError(
-        f"A variável {name} deve ser 'true' ou 'false'."
+        f"A variável {name} deve ser 'on' ou 'off' "
+        "(também são aceitos 'true' e 'false')."
     )
 
 
