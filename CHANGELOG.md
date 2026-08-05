@@ -5,6 +5,16 @@ O projeto utiliza [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
 ## [Não publicado]
 
+## [1.1.2] - 2026-08-05
+
+### Corrigido
+
+- Reprodução de áudio no Windows sem abrir a janela de terminal do `ffplay`.
+
+### Documentação
+
+- Corrigido o nome da pasta do projeto nas instruções de instalação.
+
 ## [1.1.1] - 2026-08-05
 
 ### Corrigido
@@ -51,7 +61,8 @@ O projeto utiliza [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 - Visualização ajustada para preservar data e hora presentes no vídeo.
 - Tentativas de conexão limitadas antes de exibir “Sem conexão”.
 
-[Não publicado]: https://github.com/ffelipeao/VisionHub/compare/v1.1.1...HEAD
+[Não publicado]: https://github.com/ffelipeao/VisionHub/compare/v1.1.2...HEAD
+[1.1.2]: https://github.com/ffelipeao/VisionHub/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/ffelipeao/VisionHub/compare/v1.1.0-beta.3...v1.1.1
 [1.1.0-beta.3]: https://github.com/ffelipeao/VisionHub/compare/v1.1.0-beta.2...v1.1.0-beta.3
 [1.1.0-beta.2]: https://github.com/ffelipeao/VisionHub/compare/v1.1.0-beta.1...v1.1.0-beta.2
