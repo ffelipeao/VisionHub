@@ -1,9 +1,9 @@
 # VisionHub
 
 VisionHub é um reprodutor desktop pensado para capturar e exibir imagens de
-quaisquer câmeras de segurança compatíveis com o protocolo RTSP. Inicialmente,
-o projeto utiliza um mosaico 2×2 para quatro câmeras, mas pode ser expandido
-para oito ou dezesseis câmeras, conforme a necessidade. O programa permite
+quaisquer câmeras de segurança compatíveis com o protocolo RTSP. O projeto pode
+usar um mosaico 2×2 para quatro câmeras ou 4×2 para oito câmeras, conforme a
+necessidade. O programa permite
 ampliar uma câmera, entrar em tela cheia, reproduzir o áudio de um canal por vez
 e controlar o volume individualmente.
 
@@ -19,7 +19,7 @@ licença sejam mantidos como citação da fonte original.
 
 ## Recursos
 
-- Visualização simultânea de quatro canais RTSP.
+- Visualização simultânea de quatro ou oito canais RTSP.
 - Modo ampliado para uma câmera.
 - Tela cheia com restauração do tamanho e da posição anteriores.
 - Redimensionamento das imagens sem distorção.
@@ -116,6 +116,7 @@ NVR_RTSP_PORT=554
 NVR_USER=admin
 NVR_PASSWORD=troque_por_sua_senha
 NVR_STREAM=1
+CAMERA_COUNT=4
 
 WINDOW_WIDTH=1280
 WINDOW_HEIGHT=720
@@ -139,10 +140,11 @@ contém as credenciais do NVR.
 | `NVR_USER` | Sim | — | Usuário com acesso aos canais. |
 | `NVR_PASSWORD` | Sim | — | Senha do usuário. |
 | `NVR_STREAM` | Não | `1` | `0` para stream principal ou `1` para substream. |
+| `CAMERA_COUNT` | Não | `4` | Quantidade de câmeras: `4` (grade 2×2) ou `8` (grade 4×2). |
 | `WINDOW_WIDTH` | Não | `1280` | Largura usada para calcular a proporção da janela. |
 | `WINDOW_HEIGHT` | Não | `720` | Altura usada para calcular a proporção da janela. |
 | `WINDOW_SCALE` | Não | `0.92` | Fração da tela utilizada pela janela, entre `0.5` e `1.0`. |
-| `IMAGE_FIT` | Não | `cover` | `cover` preenche o quadro; `contain` preserva toda a imagem. |
+| `IMAGE_FIT` | Não | `contain` | `cover` preenche o quadro; `contain` preserva toda a imagem. |
 | `UI_FPS` | Não | `15` | Frequência máxima de atualização da interface. |
 | `AUDIO_VOLUME` | Não | `50` | Volume inicial, entre `0` e `100`. |
 | `FFPLAY_PATH` | Não | Detectado no `PATH` | Caminho completo do executável `ffplay`. |
@@ -151,23 +153,17 @@ contém as credenciais do NVR.
 
 ### Canais e URL RTSP
 
-Por padrão, o VisionHub cria os canais 1, 2, 3 e 4. O endereço de cada canal é
-montado no seguinte formato:
+O VisionHub cria automaticamente os canais sequenciais de acordo com o valor
+de `CAMERA_COUNT`. O endereço de cada canal é montado no seguinte formato:
 
 ```text
 rtsp://usuario:senha@ip:porta/avstream/channel=CANAL/stream=STREAM.sdp
 ```
 
-Para alterar nomes, quantidade ou números dos canais, edite a lista `CAMERAS`
-em `visionhub/config.py`:
+Para usar oito câmeras, configure:
 
-```python
-CAMERAS = [
-    CameraConfig("Entrada", 1),
-    CameraConfig("Garagem", 2),
-    CameraConfig("Sala", 3),
-    CameraConfig("Quintal", 4),
-]
+```env
+CAMERA_COUNT=8
 ```
 
 ## Executando
@@ -186,7 +182,7 @@ que o botão de alto-falante de uma câmera seja acionado.
 ### Controles dos painéis
 
 - **Ampliar:** faz a câmera preencher toda a área da janela.
-- **Mosaico:** devolve a câmera ampliada ao quadro original no mosaico 2×2.
+- **Mosaico:** devolve a câmera ampliada à grade configurada.
 - **Tela cheia:** abre a câmera escolhida ocupando toda a tela.
 - **Restaurar:** sai da tela cheia e recupera a visualização anterior.
 - **Áudio:** ativa ou silencia o áudio da câmera correspondente.

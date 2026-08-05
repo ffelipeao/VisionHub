@@ -30,13 +30,15 @@ class VisionHubApp:
         self.active_audio_panel: Optional[CameraPanel] = None
         self.volume_update_id: Optional[str] = None
 
-        root.title("VisionHub — 4 Câmeras")
+        root.title(f"VisionHub — {len(CAMERAS)} Câmeras")
         self.configure_initial_geometry()
-        root.minsize(800, 500)
+        root.minsize(max(800, (len(CAMERAS) // 2) * 280), 500)
         root.configure(bg="black")
 
         self.workers = [CameraWorker(camera) for camera in CAMERAS]
         self.panels = [self._create_panel(worker) for worker in self.workers]
+        self.grid_rows = 2
+        self.grid_columns = len(self.panels) // self.grid_rows
         self._configure_grid()
         self._bind_window_events()
 
@@ -72,14 +74,14 @@ class VisionHubApp:
         return panel
 
     def _configure_grid(self) -> None:
-        """Distribui os painéis em uma grade uniforme de duas linhas e colunas."""
-        for row in range(2):
+        """Distribui os painéis em uma grade uniforme de duas linhas."""
+        for row in range(self.grid_rows):
             self.root.grid_rowconfigure(row, weight=1, uniform="row")
-        for column in range(2):
+        for column in range(self.grid_columns):
             self.root.grid_columnconfigure(column, weight=1, uniform="column")
 
         for index, panel in enumerate(self.panels):
-            row, column = divmod(index, 2)
+            row, column = divmod(index, self.grid_columns)
             panel.grid(
                 row=row,
                 column=column,
@@ -231,7 +233,7 @@ class VisionHubApp:
             )
 
     def restore_geometry(self, geometry: str) -> None:
-        """Restaura a janela e força o recálculo dos quatro painéis."""
+        """Restaura a janela e força o recálculo dos painéis."""
         self.root.geometry(geometry)
         self.root.update_idletasks()
         for panel in self.panels:
@@ -259,8 +261,8 @@ class VisionHubApp:
         selected_panel.grid(
             row=0,
             column=0,
-            rowspan=2,
-            columnspan=2,
+            rowspan=self.grid_rows,
+            columnspan=self.grid_columns,
             sticky="nsew",
             padx=0,
             pady=0,
@@ -269,12 +271,12 @@ class VisionHubApp:
         self.expanded_panel = selected_panel
 
     def show_mosaic(self) -> None:
-        """Restaura cada câmera à posição e ao tamanho originais da grade 2x2."""
+        """Restaura cada câmera à posição original na grade configurada."""
         for panel in self.panels:
             panel.grid_remove()
 
         for index, panel in enumerate(self.panels):
-            row, column = divmod(index, 2)
+            row, column = divmod(index, self.grid_columns)
             panel.grid(
                 row=row,
                 column=column,

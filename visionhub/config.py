@@ -49,6 +49,7 @@ NVR_RTSP_PORT = int_env("NVR_RTSP_PORT", 554)
 NVR_USER = required_env("NVR_USER")
 NVR_PASSWORD = required_env("NVR_PASSWORD")
 NVR_STREAM = int_env("NVR_STREAM", 1)
+CAMERA_COUNT = int_env("CAMERA_COUNT", 4)
 
 WINDOW_WIDTH = int_env("WINDOW_WIDTH", 1280)
 WINDOW_HEIGHT = int_env("WINDOW_HEIGHT", 720)
@@ -62,6 +63,8 @@ FFPLAY_PATH = shutil.which(os.getenv("FFPLAY_PATH", "ffplay"))
 
 if IMAGE_FIT not in {"cover", "contain"}:
     raise RuntimeError("A variável IMAGE_FIT deve ser 'cover' ou 'contain'.")
+if CAMERA_COUNT not in {4, 8}:
+    raise RuntimeError("A variável CAMERA_COUNT deve ser 4 ou 8.")
 if not 0 <= AUDIO_VOLUME <= 100:
     raise RuntimeError("A variável AUDIO_VOLUME deve estar entre 0 e 100.")
 
@@ -85,8 +88,6 @@ class CameraConfig:
 
 
 CAMERAS = [
-    CameraConfig("Câmera 1", 1),
-    CameraConfig("Câmera 2", 2),
-    CameraConfig("Câmera 3", 3),
-    CameraConfig("Câmera 4", 4),
+    CameraConfig(f"Câmera {channel}", channel)
+    for channel in range(1, CAMERA_COUNT + 1)
 ]
