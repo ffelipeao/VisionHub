@@ -9,7 +9,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import quote
 
-import keyring
 from dotenv import load_dotenv
 
 
@@ -68,18 +67,8 @@ NVR_RTSP_PORT = int_env("NVR_RTSP_PORT", 554)
 NVR_USER = required_env("NVR_USER")
 NVR_PASSWORD = os.getenv("NVR_PASSWORD", "").strip()
 if not NVR_PASSWORD:
-    try:
-        NVR_PASSWORD = keyring.get_password(
-            "VisionHub",
-            f"{NVR_IP}:{NVR_USER}",
-        ) or ""
-    except keyring.errors.KeyringError as error:
-        raise RuntimeError(
-            "O acesso ao cofre de credenciais do sistema foi negado."
-        ) from error
-if not NVR_PASSWORD:
     raise RuntimeError(
-        "A senha do NVR não foi encontrada no cofre seguro do sistema."
+        "A senha do NVR não foi carregada pelo assistente de configuração."
     )
 NVR_STREAM = int_env("NVR_STREAM", 1)
 CAMERA_COUNT = int_env("CAMERA_COUNT", 4)
