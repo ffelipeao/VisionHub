@@ -115,10 +115,16 @@ class CameraConfig:
         )
 
 
+def camera_name(channel: int) -> str:
+    """Retorna o nome configurado ou usa o número do canal como padrão."""
+    configured_name = os.getenv(f"CAMERA_{channel}_NAME", "").strip()
+    undefined_names = {"undefined", "null", "none"}
+    if not configured_name or configured_name.lower() in undefined_names:
+        return f"Câmera {channel}"
+    return configured_name
+
+
 CAMERAS = [
-    CameraConfig(
-        os.getenv(f"CAMERA_{channel}_NAME", "").strip() or f"Câmera {channel}",
-        channel,
-    )
+    CameraConfig(camera_name(channel), channel)
     for channel in range(1, CAMERA_COUNT + 1)
 ]

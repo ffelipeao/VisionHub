@@ -152,7 +152,7 @@ contém as credenciais do NVR.
 | `NVR_PASSWORD` | Sim | — | Senha do usuário. |
 | `NVR_STREAM` | Não | `1` | `0` para stream principal ou `1` para substream. |
 | `CAMERA_COUNT` | Não | `4` | Quantidade de câmeras: `4` (grade 2×2) ou `8` (grade 4×2). |
-| `CAMERA_N_NAME` | Não | `Câmera N` | Nome exibido para cada câmera, substituindo `N` pelo canal de `1` a `8`. |
+| `CAMERA_N_NAME` | Não | `Câmera N` | Nome exibido para cada câmera, substituindo `N` pelo canal de `1` a `8`. Quando ausente, vazio ou indefinido, o número do canal é usado automaticamente. |
 | `SUPPRESS_CONNECTION_ERRORS` | Não | `off` | Use `on` para ocultar mensagens de erro de conexão do OpenCV/FFmpeg. |
 | `CONNECTION_ATTEMPTS` | Não | `3` | Tentativas consecutivas antes de manter o canal como “Sem conexão”. |
 | `WINDOW_WIDTH` | Não | `1280` | Largura usada para calcular a proporção da janela. |
