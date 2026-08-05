@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import shutil
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import quote
@@ -12,7 +13,18 @@ from dotenv import load_dotenv
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-load_dotenv(PROJECT_ROOT / ".env")
+IS_PACKAGED = getattr(sys, "frozen", False)
+CONFIG_DIR = Path.home() / ".visionhub" if IS_PACKAGED else PROJECT_ROOT
+CONFIG_FILE = CONFIG_DIR / ".env"
+
+if IS_PACKAGED and not CONFIG_FILE.exists():
+    resource_root = Path(getattr(sys, "_MEIPASS", PROJECT_ROOT))
+    config_example = resource_root / ".env.example"
+    if config_example.exists():
+        CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(config_example, CONFIG_FILE)
+
+load_dotenv(CONFIG_FILE)
 
 os.environ.setdefault("OPENCV_FFMPEG_CAPTURE_OPTIONS", "rtsp_transport;tcp")
 
@@ -23,7 +35,7 @@ def required_env(name: str) -> str:
     if not value:
         raise RuntimeError(
             f"A variável {name} não foi definida. "
-            "Preencha o arquivo .env na pasta do projeto."
+            f"Preencha o arquivo {CONFIG_FILE}."
         )
     return value
 
@@ -34,7 +46,7 @@ def int_env(name: str, default: int | None = None) -> int:
     if raw_value is None or not raw_value.strip():
         if default is not None:
             return default
-        raise RuntimeError(f"A variável {name} não foi definida no arquivo .env.")
+        raise RuntimeError(f"A variável {name} não foi definida em {CONFIG_FILE}.")
     try:
         return int(raw_value)
     except ValueError as error:

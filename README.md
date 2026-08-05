@@ -195,6 +195,33 @@ Com o ambiente virtual ativado:
 python main.py
 ```
 
+## Instaladores
+
+O workflow `Gerar instaladores` cria automaticamente:
+
+- `VisionHub-Windows-Setup.exe`, para Windows 11 de 64 bits.
+- `VisionHub-macOS.dmg`, contendo o aplicativo para macOS.
+
+Ele pode ser executado manualmente na aba **Actions** do GitHub ou
+automaticamente ao publicar uma tag iniciada por `v`, como `v1.0.0`. Os arquivos
+ficam disponíveis como artefatos da execução.
+
+Na primeira execução, o aplicativo cria automaticamente o arquivo de
+configuração em:
+
+```text
+~/.visionhub/.env
+```
+
+No Windows, `~` representa a pasta do usuário, por exemplo
+`C:\Users\usuario`. No macOS, representa `/Users/usuario`. Use o conteúdo de
+`.env.example` como modelo. Preencha esse arquivo e abra o programa novamente.
+Durante o desenvolvimento, o programa continua usando o `.env` localizado na
+raiz do projeto.
+
+O `ffplay` não é incluído nos instaladores. Para usar áudio, instale o FFmpeg e
+deixe o executável disponível no `PATH`, conforme descrito nos requisitos.
+
 O áudio começa fechado. O VisionHub não abre nenhuma reprodução de áudio até
 que o botão de alto-falante de uma câmera seja acionado.
 
