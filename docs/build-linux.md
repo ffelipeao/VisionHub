@@ -32,11 +32,13 @@ python -m pip install -r requirements-build.txt
 rm -rf build dist VisionHub.spec package
 pyinstaller --noconfirm --clean --windowed --name VisionHub \
   --icon assets/icon.png \
+  --add-data assets/VisuonHub.png:assets \
   --collect-all cv2 --collect-all keyring main.py
 ```
 
 No Linux, a exibição do ícone no menu de aplicativos é definida pelo pacote
 `.deb`; por isso, os PNGs também serão copiados para o tema de ícones do sistema.
+O parâmetro `--add-data` inclui a imagem exibida na abertura do programa.
 
 Teste antes de empacotar:
 

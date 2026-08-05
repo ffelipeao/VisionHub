@@ -30,12 +30,14 @@ python -m pip install -r requirements-build.txt
 Remove-Item build, dist, VisionHub.spec -Recurse -Force -ErrorAction SilentlyContinue
 pyinstaller --noconfirm --clean --windowed --name VisionHub `
   --icon assets\icon.ico `
+  --add-data "assets\VisuonHub.png:assets" `
   --collect-all cv2 --collect-all keyring main.py
 ```
 
 O PyInstaller incorpora `assets\icon.ico` ao executável. O arquivo contém as
 resoluções necessárias para o Explorador de Arquivos, a barra de tarefas e os
 atalhos do Windows.
+O parâmetro `--add-data` inclui a imagem exibida na abertura do programa.
 
 Teste a aplicação antes de gerar o instalador:
 

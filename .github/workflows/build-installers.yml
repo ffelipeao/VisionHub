@@ -38,7 +38,7 @@ jobs:
           "version=$version" >> $env:GITHUB_OUTPUT
 
       - name: Gerar aplicação
-        run: pyinstaller --noconfirm --clean --windowed --name VisionHub --collect-all cv2 --collect-all keyring main.py
+        run: pyinstaller --noconfirm --clean --windowed --name VisionHub --icon assets/icon.ico --add-data "assets/VisuonHub.png:assets" --collect-all cv2 --collect-all keyring main.py
 
       - name: Gerar instalador
         shell: pwsh
@@ -83,7 +83,7 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Gerar aplicativo
-        run: pyinstaller --noconfirm --clean --windowed --name VisionHub --collect-all cv2 --collect-all keyring main.py
+        run: pyinstaller --noconfirm --clean --windowed --name VisionHub --icon assets/icon.icns --add-data assets/VisuonHub.png:assets --collect-all cv2 --collect-all keyring main.py
 
       - name: Aplicar versão ao aplicativo
         run: |

@@ -41,11 +41,13 @@ Gere o aplicativo:
 ```bash
 pyinstaller --noconfirm --clean --windowed --name VisionHub \
   --icon assets/icon.icns \
+  --add-data assets/VisuonHub.png:assets \
   --collect-all cv2 --collect-all keyring main.py
 ```
 
 O PyInstaller incorpora `assets/icon.icns` ao pacote `.app`. O mesmo ícone é
 mantido no DMG porque a imagem de disco é criada a partir desse aplicativo.
+O parâmetro `--add-data` inclui a imagem exibida na abertura do programa.
 
 Aplique a versão e uma assinatura local ad hoc:
 
